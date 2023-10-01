@@ -1,0 +1,271 @@
+@font-face {
+    font-family: "Editorial";
+    src: url("fonts/PPEditorialOld-UltralightItalic.otf");
+    font-style: italic;
+}
+
+@font-face {
+    font-family: "Editorial";
+    src: url("fonts/PPEditorialOld-Ultralight.otf");
+    font-weight: 100;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Editorial";
+    src: url("fonts/PPEditorialOld-Regular.otf");
+    font-weight: 200;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Editorial";
+    src: url("fonts/PPEditorialOld-Ultrabold.otf");
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Editorial";
+    src: url("fonts/PPEditorialOld-UltraboldItalic.otf");
+    font-weight: bold;
+    font-style: italic;
+}
+
+body {
+    background-color: #060807;
+    font-family: "Editorial";
+    font-weight: 100;
+    color: #EAEBE6;
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+h1 {
+    font-weight: 200;
+}
+
+h2 {
+    font-weight: bold;
+}
+
+p {
+    font-weight: 100;
+}
+
+/** Overriding Bootstrap modal styling **/
+.modal-footer {
+    display: flex;
+    justify-content: center;
+}
+.modal-content {
+    color: #060807;
+}
+.modal-content .outline-button {
+    box-shadow: 0 0 0 2px rgba(93, 93, 93, 0.4) inset;
+    color: #060807;
+}
+
+/** Nav bar **/
+#menuToggle
+{
+  display: block;
+  position: relative;
+  top: 50px;
+  left: 50px;
+  z-index: 1;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#menuToggle a
+{
+  text-decoration: none;
+  color: #232323;
+  transition: color 0.3s ease;
+}
+
+#menuToggle a:hover
+{
+  color: #B69965;
+}
+
+#menuToggle input
+{
+  display: block;
+  width: 40px;
+  height: 32px;
+  position: absolute;
+  top: -7px;
+  left: -5px;
+  
+  cursor: pointer;
+  
+  opacity: 0; /* hide this */
+  z-index: 2; /* and place it over the hamburger */
+  
+  -webkit-touch-callout: none;
+}
+
+/*
+ * Just a quick hamburger
+ */
+#menuToggle span
+{
+  display: block;
+  width: 33px;
+  height: 4px;
+  margin-bottom: 5px;
+  position: relative;
+  
+  background: #EAEBE6;
+  border-radius: 3px;
+  
+  z-index: 1;
+  
+  transform-origin: 4px 0px;
+  
+  transition: transform 0.5s cubic-bezier(0.77,0.2,0.05,1.0),
+              background 0.5s cubic-bezier(0.77,0.2,0.05,1.0),
+              opacity 0.55s ease;
+}
+
+#menuToggle span:first-child
+{
+  transform-origin: 0% 0%;
+}
+
+#menuToggle span:nth-last-child(2)
+{
+  transform-origin: 0% 100%;
+}
+
+/* 
+ * Transform all the slices of hamburger
+ * into a crossmark.
+ */
+#menuToggle input:checked ~ span
+{
+  opacity: 1;
+  transform: rotate(45deg) translate(-2px, -1px);
+  background: #232323;
+}
+
+/*
+ * But let's hide the middle one.
+ */
+#menuToggle input:checked ~ span:nth-last-child(3)
+{
+  opacity: 0;
+  transform: rotate(0deg) scale(0.2, 0.2);
+}
+
+/*
+ * Ohyeah and the last one should go the other direction
+ */
+#menuToggle input:checked ~ span:nth-last-child(2)
+{
+  transform: rotate(-45deg) translate(0, -1px);
+}
+
+/*
+ * Make this absolute positioned
+ * at the top left of the screen
+ */
+#menu
+{
+  position: absolute;
+  width: 300px;
+  margin: -100px 0 0 -50px;
+  padding: 50px;
+  padding-top: 125px;
+  
+  background: #fff;
+  list-style-type: none;
+  -webkit-font-smoothing: antialiased;
+  /* to stop flickering of text in safari */
+  
+  transform-origin: 0% 0%;
+  transform: translate(-100%, 0);
+  
+  transition: transform 0.5s cubic-bezier(0.77,0.2,0.05,1.0);
+}
+
+#menu li
+{
+  padding: 10px 0;
+  font-size: 22px;
+}
+
+/*
+ * And let's slide it in from the left
+ */
+#menuToggle input:checked ~ ul
+{
+  transform: none;
+}
+
+
+
+
+/** Outline button **/
+.outline-button {
+    background-color: transparent;
+    border: none;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2) inset;
+    color: #EAEBE6;
+    padding: 8px 15px 8px 15px;
+    position: relative;
+    cursor: pointer;
+}
+.outline-button::before, .outline-button::after {
+    content: "";
+    position: absolute;
+    height: 0;
+    width: 2px;
+    transition: height 0.4s 0.4s cubic-bezier(0.86, 0, 0.07, 1), width 0.4s cubic-bezier(0.86, 0, 0.07, 1);
+}
+.outline-button::before {
+    box-shadow: 2px 2px 0 #B69965 inset;
+    bottom: 0;
+    left: 0;
+}
+.outline-button::after {
+    box-shadow: -2px -2px 0 #B69965 inset;
+    top: 0;
+    right: 0;
+}
+.outline-button:hover::before, .outline-button:hover::after {
+    height: 100%;
+    width: 100%;
+    transition: height 0.4s cubic-bezier(0.86, 0, 0.07, 1), width 0.4s 0.4s cubic-bezier(0.86, 0, 0.07, 1);
+}
+
+
+/** Splash container **/
+#header {
+    font-size: 90px;
+}
+.splash-container {
+    text-align: center;
+    margin-top: 210px;
+}
+.btn-container {
+    margin-top: 20px;
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+/** Footer **/
+footer {
+    text-align: center;
+    margin-top: 200px;
+    width: 100%;
+}
+
+#footer-text {
+    font-size: 12px;
+}
