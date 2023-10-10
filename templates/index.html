@@ -11,6 +11,7 @@
         <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/index.css') }}">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js" integrity="sha512-Xm9qbB6Pu06k3PUwPj785dyTl6oHxgsv9nHp7ej7nCpAqGZT3OZpsELuCYX05DdonFpTlBpXMOxjavIAIUwr0w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     </head>
     <body>
         <!-- Nav bar -->
@@ -30,7 +31,7 @@
 
         <!-- Splash page-->
         <div class="splash-container">
-            <h1 id="header">Spyfall</h1>
+            <h1 data-value="Spyfall" id="header">Spyfall</h1>
             <div class="btn-container">
                 <button type="button" class="outline-button" data-bs-toggle="modal" data-bs-target="#createModal">Create game</button>
                 <button type="button" class="outline-button" data-bs-toggle="modal" data-bs-target="#joinModal">Join game</button>
@@ -43,19 +44,18 @@
               <div class="modal-content">
                 <div class="modal-header">
                   <h5 class="modal-title" id="createModalLabel">Create game</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-                  </button>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                  <form>
+                  <form action="{{ url_for('handle_play') }}" method="POST">
                     <div class="form-group">
                       <label for="detective-name" class="col-form-label">Detective name:</label>
-                      <input type="text" class="form-control" id="detective-name">
+                      <input type="text" class="form-control" name="detectiveName">
+                    </div>
+                    <div class="modal-footer">
+                      <button type="submit" class="outline-button">Let's go</button>
                     </div>
                   </form>
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="outline-button">Let's go</button>
                 </div>
               </div>
             </div>
@@ -67,23 +67,22 @@
               <div class="modal-content">
                 <div class="modal-header">
                   <h5 class="modal-title" id="joinModalLabel">Join game</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-                  </button>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                  <form>
+                  <form action="{{ url_for('handle_play') }}" method="POST">
                     <div class="form-group">
                       <label for="detective-name" class="col-form-label">Detective name:</label>
-                      <input type="text" class="form-control" id="detective-name">
+                      <input type="text" class="form-control" name="detectiveName">
                     </div>
                     <div class="form-group">
                       <label for="game-code" class="col-form-label">Game code:</label>
-                      <input type="text" class="form-control" id="game-code">
+                      <input type="text" class="form-control" name="gameCode">
+                    </div>
+                    <div class="modal-footer">
+                      <button type="submit" class="outline-button">Let's go</button>
                     </div>
                   </form>
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="outline-button">Let's go</button>
                 </div>
               </div>
             </div>
@@ -93,4 +92,47 @@
             <p id="footer-text">Designed and developed by Pathum Danthanarayana</p>
         </footer>
     </body>
+
+    <script>
+      const socket = io({autoConnect: false});
+      const letters = "ABCDEFGNOPQRSTUVWXYZ";
+
+      // Handler for 'load_HTML' messages from server
+      socket.on('load_HTML', (html) => {
+        $('html').html(html)
+        console.log("loadHTML message received on client side");
+      });
+
+    //   document.getElementById("header").onmouseover = event => {  
+    //     let iterations = 0;
+    //     const interval = setInterval(() => {
+    //       event.target.innerText = event.target.innerText.split("")
+    //         .map((letter, index) => {
+    //           if(index < iterations) {
+    //             return event.target.dataset.value[index];
+    //           }
+    //           return letters[Math.floor(Math.random() * 26)]
+    //         .join("");
+          
+    //     if (iterations >= event.target.dataset.value.length) clearInterval(interval);
+    //     iterations += 1 / 3;
+    //     }, 30);
+    //   })
+    // }
+      // Function for handling 'Create game'
+      // function createGame() {
+      //   socket.connect();
+      //   let detectiveName = document.getElementById("create-detective-name").value;
+      //   console.log("CLIENT: Detective " + detectiveName + " is creating a game");
+      //   socket.emit("create_game", detectiveName)
+      // }
+      // // Function for handling 'Join game'
+      // function joinGame() {
+      //   socket.connect();
+      //   let detectiveName = document.getElementById("join-detective-name").value;
+      //   let gameCode = document.getElementById("game-code").value;
+      //   console.log("CLIENT: Detective " + detectiveName + " is joining game " + gameCode);
+      //   socket.emit("join_game", detectiveName, gameCode);
+      // }
+    </script>
 </html>

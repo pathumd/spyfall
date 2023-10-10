@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Spyfall</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- Bootstrap -->
+        <link rel= "stylesheet" type= "text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+        <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/lobby.css') }}">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js" integrity="sha512-Xm9qbB6Pu06k3PUwPj785dyTl6oHxgsv9nHp7ej7nCpAqGZT3OZpsELuCYX05DdonFpTlBpXMOxjavIAIUwr0w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    </head>
+    <body>
+        <!-- Nav bar -->
+        <nav role="navigation">
+            <div id="menuToggle">
+            <input type="checkbox" />
+            <span></span>
+            <span></span>
+            <span></span>
+            <ul id="menu">
+                <a href="/"><li>Home</li></a>
+                <a href="#"><li>How to play</li></a>
+                <a href="#"><li>Support</li></a>
+            </ul>
+            </div>
+        </nav>
+
+        <!-- Lobby -->
+        <div class="lobby-container">
+            <div class="invite-code-container">
+                <h1 class="invite-code-title">Invite code:</h1>
+                <button class="invite-code-btn">{{ gameCode }}</button>
+            </div>
+            <h3 class="game-length">Game length: 8 minutes</h2>
+            <div class="players">
+                {% for player in joinedPlayers %}
+                    <h1 class="player-name">{{ player }}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </body>
+
+    <script>
+      const socket = io();
+      const detectiveName = '{{ detectiveName }}'
+      const gameCode  = '{{ gameCode }}'
+      console.log("Player name: " + detectiveName)
+      socket.emit("joinedGame", '{{ detectiveName }}')
+
+      // Handler for updating lobby with joining players
+      socket.on('playerJoinLog', data => {
+        console.log(data["message"]);
+        let newPlayerName = document.createElement('H1')
+        newPlayerName.innerHTML = data["message"]
+        newPlayerName.classList.add('player-name')
+        $('.players').append(newPlayerName)
+      });
+    </script>
+</html>

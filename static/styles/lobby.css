@@ -244,27 +244,48 @@ p {
 }
 
 
-/** Splash container **/
-#header {
-    font-size: 90px;
-    padding: 0rem clamp(1rem, 2vw, 3rem);
-    padding-top: 5px;
-    border-radius: clamp(0.4rem, 0.75vw, 1rem);
-    display: inline-block;
+/** Lobby **/
+.lobby-container {
+  margin-top: 100px;
+  text-align: center;
 }
-#header:hover {
-  color: #060807;
-  background-color: #EAEBE6;
+
+.invite-code-container {
+  text-align: center;
 }
-.splash-container {
-    text-align: center;
-    margin-top: 210px;
+
+.invite-code-btn, .invite-code-title {
+  display: inline-block;
+  vertical-align: middle;
 }
-.btn-container {
-    margin-top: 20px;
-    display: flex;
-    gap: 20px;
-    justify-content: center;
+
+.invite-code-title {
+  font-size: 30px;
+}
+
+.invite-code-btn {
+  font-size: 30px;
+  font-weight: bold;
+  background-color: #060807;
+  color: #EAEBE6;
+  border: none;
+}
+
+.invite-code-btn:hover {
+  color: #B69965;
+}
+
+.game-length {
+  margin-top: 10px;
+  font-size: 15px;
+}
+
+.players {
+  margin-top: 40px;
+}
+
+.players .player-name {
+  margin-bottom: 20px;
 }
 
 /** Footer **/
