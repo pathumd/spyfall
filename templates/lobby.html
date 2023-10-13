@@ -42,6 +42,9 @@
                     <h1 class="player-name">{{ player }}</div>
                 {% endfor %}
             </div>
+            {% if gameOwner is true %}
+                <button class="outline-button">Start game</button>
+            {% endif %}
         </div>
     </body>
 
@@ -50,13 +53,14 @@
       const detectiveName = '{{ detectiveName }}'
       const gameCode  = '{{ gameCode }}'
       console.log("Player name: " + detectiveName)
-      socket.emit("joinedGame", '{{ detectiveName }}')
+      // Join socket room
+      socket.emit("join", {'playerName': '{{ detectiveName }}', 'channel': '{{ gameCode }}'})
 
       // Handler for updating lobby with joining players
       socket.on('playerJoinLog', data => {
         console.log(data["message"]);
         let newPlayerName = document.createElement('H1')
-        newPlayerName.innerHTML = data["message"]
+        newPlayerName.innerText = data["message"]
         newPlayerName.classList.add('player-name')
         $('.players').append(newPlayerName)
       });

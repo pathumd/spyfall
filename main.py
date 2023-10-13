@@ -1,7 +1,7 @@
 # Import libraries
 from flask_pymongo import PyMongo
 from flask import Flask, render_template, request, Response, session, redirect, url_for
-from flask_socketio import SocketIO, send, emit
+from flask_socketio import SocketIO, send, emit, join_room
 from pymongo import MongoClient
 import string
 import random
@@ -69,6 +69,7 @@ def generate_image(prompt):
 def db_create_game(player, game_code):
     # Generate 5-letter game code (e.g. ABCDE)
     db.get_collection("games").insert_one({'game_code': game_code, 'status': 0, 'owner': player})
+    session['owner'] = True
 
 
 def db_create_player(player, game_code):
@@ -107,6 +108,8 @@ def handle_play():
             else:
                 print(f"ERROR: Player '{detective_name}' cannot join {game_code} (game does not exist)")
                 return Response("404")
+            # Player is not owner of game
+            session['owner'] = False
         else:
             # User wants to create a game
             game_code = generate_game_code()
@@ -123,12 +126,17 @@ def handle_play():
 @app.route("/lobby")
 def go_to_lobby():
     joined_players = db_get_all_players(session['game_code'])
-    return render_template('lobby.html', detectiveName=session['player_name'], gameCode=session['game_code'], joinedPlayers=joined_players)
+    return render_template('lobby.html',
+                           detectiveName=session['player_name'],
+                           gameCode=session['game_code'],
+                           joinedPlayers=joined_players,
+                           gameOwner=session['owner'])
 
 
-@socketio.on("joinedGame")
-def handle_join_game(player_name):
-    emit("playerJoinLog", {'message': player_name}, broadcast=True)
+@socketio.on("join")
+def handle_join_game(message):
+    join_room(message['channel'])
+    emit("playerJoinLog", {'message': message['playerName']}, room=message['channel'])
 
 
 if __name__ == "__main__":
