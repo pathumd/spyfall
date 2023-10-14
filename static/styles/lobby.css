@@ -246,7 +246,7 @@ p {
 
 /** Lobby **/
 .lobby-container {
-  margin-top: 100px;
+  margin-top: 60px;
   text-align: center;
 }
 
@@ -254,40 +254,48 @@ p {
   text-align: center;
 }
 
-.invite-code-btn, .invite-code-title {
+.invite-code-title, .invite-code-btn {
+  font-size: 20px;
+  color: #EAEBE6;
   display: inline-block;
-  vertical-align: middle;
-}
-
-.invite-code-title {
-  font-size: 30px;
 }
 
 .invite-code-btn {
-  font-size: 30px;
+  padding-left: 5px;
+  position: relative;
   font-weight: bold;
+  cursor: pointer;
+  margin: auto;
+  line-height: 1.25rem;
   background-color: #060807;
-  color: #EAEBE6;
   border: none;
+  -moz-transition: all .2s ease-in;
+  -o-transition: all .2s ease-in;
+  -webkit-transition: all .2s ease-in;
+  transition: all .2s ease-in;
 }
-
 .invite-code-btn:hover {
   color: #B69965;
 }
 
 .game-length {
-  margin-top: 10px;
+  margin-top: 5px;
   font-size: 15px;
 }
 
 .players {
   margin-top: 40px;
+  text-align: center;
 }
 
 .players .player-name {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
+  font-size: 40px;
 }
 
+#start-game {
+  margin-top: 30px;
+}
 /** Footer **/
 footer {
     text-align: center;

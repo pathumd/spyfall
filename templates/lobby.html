@@ -34,7 +34,7 @@
         <div class="lobby-container">
             <div class="invite-code-container">
                 <h1 class="invite-code-title">Invite code:</h1>
-                <button class="invite-code-btn">{{ gameCode }}</button>
+                <button class="invite-code-btn" onclick="copyGameCode()">{{ gameCode }}</button>
             </div>
             <h3 class="game-length">Game length: 8 minutes</h2>
             <div class="players">
@@ -43,7 +43,7 @@
                 {% endfor %}
             </div>
             {% if gameOwner is true %}
-                <button class="outline-button">Start game</button>
+                <button class="outline-button" id="start-game" onclick="startGame()">Start game</button>
             {% endif %}
         </div>
     </body>
@@ -52,17 +52,29 @@
       const socket = io();
       const detectiveName = '{{ detectiveName }}'
       const gameCode  = '{{ gameCode }}'
-      console.log("Player name: " + detectiveName)
       // Join socket room
       socket.emit("join", {'playerName': '{{ detectiveName }}', 'channel': '{{ gameCode }}'})
 
       // Handler for updating lobby with joining players
       socket.on('playerJoinLog', data => {
-        console.log(data["message"]);
+        console.log(data["message"] + " joined");
         let newPlayerName = document.createElement('H1')
         newPlayerName.innerText = data["message"]
         newPlayerName.classList.add('player-name')
         $('.players').append(newPlayerName)
       });
+      
+      // Function to copy game code
+      function copyGameCode() {
+        var gameCode = '{{ gameCode }}';
+        navigator.clipboard.writeText(gameCode);
+        alert("Game code copied!");
+      }
+
+      // Function for game owner to start game
+      function startGame() {
+        // Get game owner to choose location and assign roles to each player
+        socket.emit("organizeGame", {'channel': '{{ gameCode }}'})
+      }
     </script>
 </html>
