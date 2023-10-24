@@ -7,6 +7,7 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <!-- Bootstrap -->
+        <link rel="icon" type="image/x-icon" href="{{ url_for('static',filename='images/favicon.ico') }}">
         <link rel= "stylesheet" type= "text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
         <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/lobby.css') }}">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -54,6 +55,8 @@
       const gameCode  = '{{ gameCode }}'
       // Join socket room
       socket.emit("join", {'playerName': '{{ detectiveName }}', 'channel': '{{ gameCode }}'})
+      
+
 
       // Handler for updating lobby with joining players
       socket.on('playerJoinLog', data => {
@@ -64,6 +67,45 @@
         $('.players').append(newPlayerName)
       });
       
+      // Handler for retrieving location and role
+      socket.on('gameStarting', data => {
+        console.log(data["gameCode"] + " is starting...");
+        let data_to_send = {'playerName': '{{ detectiveName}}', 'location': data["location"], 'channel': '{{ gameCode}}'}
+        $.ajax({
+            url: '/get_game_info',
+            type: 'POST',
+            data: JSON.stringify(data_to_send),
+            contentType: "application/json",
+            dataType: 'json',
+            success: function (response) {
+              console.log("Request succeeded for " + '{{ detectiveName }}')
+              if (response.redirect) {
+                window.location.href = response.redirect;
+              }
+            },
+            error: function (response) {
+              console.log("Request failed for " + '{{ detectiveName }}');
+            }
+        });
+        // socket.emit("start", {'playerName': '{{ detectiveName }}', 'location': data["location"], 'channel': '{{ gameCode }}'});
+      });
+      
+      // Handler for 'load_HTML' messages from server
+      socket.on('load_HTML', (html) => {
+        //$('html').html(html)
+        document.open(); 
+        document.write(html); 
+        document.close();
+        console.log("loadHTML message received on client side");
+      });
+
+      // Handler for redirect
+      socket.on('redirect', (dest) => {
+        // console.log("Switching to the play page...")
+        // window.location.href = dest;
+        console.log("'{{ detectiveName }}' received redirect message from server");
+      });
+
       // Function to copy game code
       function copyGameCode() {
         var gameCode = '{{ gameCode }}';

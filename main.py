@@ -1,17 +1,22 @@
 # Import libraries
 from flask_pymongo import PyMongo
-from flask import Flask, render_template, request, Response, session, redirect, url_for
-from flask_socketio import SocketIO, send, emit, join_room
+from flask import Flask, render_template, request, Response, session, redirect, url_for, jsonify
+from flask_socketio import SocketIO, send, emit, join_room, leave_room
+from flask_session import Session
 from pymongo import MongoClient
 import string
 import random
-import openai
+from datetime import timedelta
 
 # TODO: Fix bug where opening /lobby in two tabs causes player to join 'twice' for other users
 
 # Create Flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'some_secret_key'
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+app.config.from_object(__name__)
+Session(app)
 
 # Initialize Socket IO
 socketio = SocketIO(app)
@@ -51,6 +56,7 @@ def generate_game_code():
         return game_code.upper()
 
 
+# DB FUNCTIONS
 def game_exists(game_code):
     """
     Checks whether the specified game exists.
@@ -65,7 +71,6 @@ def game_exists(game_code):
     return False
 
 
-# DB FUNCTIONS
 def db_create_game(player_id, game_code):
     """
     Creates a game in the games collection.
@@ -78,13 +83,13 @@ def db_create_game(player_id, game_code):
 
 def db_create_player(player, game_code):
     """
-    Creates a player in the players collection.
+    Creates a player in the player collection.
     :param player: The player's name
     :param game_code: The code of the game they are creating/joining
     """
     # Create a player
     new_player = db.get_collection("players").insert_one({'name': player, 'game': game_code, 'role': "unknown"})
-    session['id'] = str(new_player.inserted_id)
+    return str(new_player.inserted_id)
 
 
 def db_get_all_players(game_code):
@@ -109,10 +114,27 @@ def db_get_all_player_names(game_code, remove_curr_player=False):
         players_lst.append(player['name'])
     return players_lst
 
-def db_get_location():
+
+def db_get_location_images(location):
+    query = {'name': location}
+    locations = get_collection('locations')
+    for location in locations.find(query):
+        return list(location['images'])
+
+
+def db_get_all_location_names():
+    locations = get_collection("locations")
+    location_names = []
+    for location in locations.find():
+        location_names.append(str(location['name']).title())
+    return location_names
+
+
+def db_get_random_location():
     locations = get_collection("locations")
     location = list(locations.aggregate([{"$sample": {"size": 1}}]))
     return location[0]
+
 
 def db_assign_roles(location, players):
     roles = location['roles']
@@ -131,6 +153,15 @@ def db_assign_roles(location, players):
         players_col.update_one(query, {"$set": {"role": role}})
 
 
+def db_get_assigned_role(player_id, game_code):
+    players = get_collection("players")
+    query = {"game": game_code}
+    for player in players.find(query):
+        if str(player['_id']) == player_id:
+            return str(player['role']).title()
+    return None
+
+
 # ROUTE FUNCTIONS
 @app.route('/')
 def home():
@@ -141,6 +172,7 @@ def home():
 def handle_play():
     if request.method == 'POST':
         detective_name = request.form['detectiveName']
+        print(f"Detective name: {detective_name}")
         # Check if user wants to create game or join game
         if 'gameCode' in request.form:
             # User wants to join a game
@@ -155,35 +187,69 @@ def handle_play():
         else:
             # User wants to create a game
             game_code = generate_game_code()
+            print(f"Game code: {game_code}")
             print(f"Player '{detective_name}' creating game {game_code}...")
             db_create_game(detective_name, game_code)
 
-        # Save player's info
-        db_create_player(detective_name, game_code)
         # Save session info
+        session['id'] = db_create_player(detective_name, game_code)
         session['player_name'] = detective_name
         session['game_code'] = game_code
-        return redirect(url_for(".go_to_lobby"))
+        return redirect(url_for(".go_to_lobby", code=game_code))
 
 
-@app.route("/lobby")
-def go_to_lobby():
-    joined_players = db_get_all_player_names(session['game_code'], remove_curr_player=True)
+@app.route("/<code>")
+def go_to_lobby(code):
+    joined_players = db_get_all_player_names(code, remove_curr_player=True)
     return render_template('lobby.html',
                            detectiveName=session['player_name'],
                            gameCode=session['game_code'],
                            joinedPlayers=joined_players,
                            gameOwner=session['owner'])
 
+@app.route("/get_game_info", methods=['POST'])
+def retrieve_role_and_start():
+    """
+    Executed by all players to retrieve the location
+    and role they will have for the game.
+    :param message:
+    :return:
+    """
+    if request.method == 'POST':
+        data = request.get_json()
+        print(f"{data['playerName']} is retrieving their role and starting...")
+        # Get assigned role
+        print(f"Player id: {session['id']}, game code: {data['channel']}")
+        assigned_role = db_get_assigned_role(session['id'], data['channel'])
+        print(f"Assigned role from db: {assigned_role}")
+        session['role'] = assigned_role
+        # Get assigned location
+        session['location'] = data['location']
+        print(f"Assigned role for {session['player_name']}: {session['role']} at the {session['location']}")
+        return jsonify(dict(redirect=url_for('.start_playing')))
 
 # SOCKETIO FUNCTIONS
+@socketio.on("disconnect")
+def handle_disconnect():
+    if 'game_code' in session:
+        leave_room(session['game_code'])
+    session.clear()
+
+@socketio.on("connect")
+def handle_connect():
+    if 'game_code' in session:
+        leave_room(session['game_code'])
+    session.clear()
+
+
 @socketio.on("join")
 def handle_join_game(message):
     join_room(message['channel'])
-    emit("playerJoinLog", {'message': message['playerName']}, room=message['channel'])
+    emit("playerJoinLog", {'message': message['playerName']}, to=message['channel'])
+
 
 @socketio.on("organizeGame")
-def get_location_and_assign_roles(message):
+def choose_location_and_assign_roles(message):
     """
     Executed only by game owner, acts as dealer in the game
     :param message:
@@ -191,21 +257,30 @@ def get_location_and_assign_roles(message):
     """
     # Get list of all players
     players = db_get_all_players(message['channel'])
-    location = db_get_location()
+    # Choose random location
+    location = db_get_random_location()
+    # Assign roles to all players (including yourself)
     db_assign_roles(location, players)
     # Notify all other players that game is starting
-    emit("start", {'gameCode': message['channel']}, room=message['channel'])
+    emit("gameStarting", {'location': location['name'], 'gameCode': message['channel']}, to=message['channel'], include_self=True)
 
-@socketio.on("start")
-def handle_start(message):
-    """
-    Executed by all players to retrieve the location
-    and role they will have for the game.
-    :param message:
-    :return:
-    """
-    pass
+@app.route("/lets_play")
+def start_playing():
+    # Get list of all players (excluding current player)
+    players = db_get_all_player_names(session['game_code'], remove_curr_player=True)
+    # Get list of all possible locations
+    locations = db_get_all_location_names()
+    # Get list of images for selected location
+    location_images = db_get_location_images(session['location'])
+    print(f"{session['player_name']} is starting to play as a {session['role']} at the {session['location']}")
+    return render_template('play.html',
+                           detectiveName=session['player_name'],
+                           selectedLocation=str(session['location']).title(),
+                           role=session['role'],
+                           locations=locations,
+                           players=players,
+                           images=location_images)
 
 
 if __name__ == "__main__":
-    socketio.run(app, allow_unsafe_werkzeug=True, debug=True)
+    socketio.run(app, host="0.0.0.0", port="5000", allow_unsafe_werkzeug=True, debug=True)
