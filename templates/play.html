@@ -33,17 +33,105 @@
 
         <!-- Main page -->
         <div class="main-container">
+            <!-- Timer -->
             <h1 class="timer">8:00</h1>
-            <div id="slidy-container">
-                <figure id="slidy">
-                {% for image in images %}
-                    <img class="location-img" src='{{image}}' referrerpolicy="no-referrer" alt="Location image">
-                {% endfor %}
-                </figure>
+
+            <!--Location images -->
+            {% if images is not none %}
+                <div id="slidy-container" style="width: 25%; overflow: hidden; margin: 0 auto; padding-top: 25px;">
+                    <figure id="slidy">
+                    {% for image in images %}
+                        <img class="location-img" src='{{image}}' referrerpolicy="no-referrer" alt="Location image">
+                    {% endfor %}
+                    </figure>
+                </div>
+            {% endif %}
+            
+            <!--Role-->
+            <h1 class="role-text">You are a <span class="player-role">{{ role }}</span></h1>
+            <!-- Location -->
+            {% if selectedLocation is not none %}
+                <h1 class="selected-location">at a {{ selectedLocation }}</h1>
+            {% endif %}
+
+            <!-- Player names -->
+            <div class="players-list-container">
+                <h1 class="player-list-title">Player list:</h1>
+                <div class="player-names">
+                    {% for player in players %}
+                        <div class="player-name">
+                            <input type="checkbox" id="test1" />
+                            <label for="test1">{{ player }}</label>
+                        </div>
+                    {% endfor %}
+                    <div class="player-name">
+                        <input type="checkbox" id="test2" />
+                        <label for="test2">Some player</label>
+                    </div>
+                    
+                    <div class="player-name">
+                        <input type="checkbox" id="test3" />
+                        <label for="test3">Some player</label>
+                    </div>
+
+                    <div class="player-name">
+                        <input type="checkbox" id="test4" />
+                        <label for="test4">Some player</label>
+                    </div>
+                    
+                    <div class="player-name">
+                        <input type="checkbox" id="test5" />
+                        <label for="test5">Some player</label>
+                    </div>
+
+                    <div class="player-name">
+                        <input type="checkbox" id="test6" />
+                        <label for="test6">Some player</label>
+                    </div>
+                    
+                    <div class="player-name">
+                        <input type="checkbox" id="test7" />
+                        <label for="test7">Some player</label>
+                    </div>
+
+                    <div class="player-name">
+                        <input type="checkbox" id="test8" />
+                        <label for="test8">Some player</label>
+                    </div>
+
+                    <div class="player-name">
+                        <input type="checkbox" id="test9" />
+                        <label for="test9">Some player</label>
+                    </div>
+
+                    <div class="player-name">
+                        <input type="checkbox" id="test10" />
+                        <label for="test10">Some player</label>
+                    </div>
+
+                    <div class="player-name">
+                        <input type="checkbox" id="test11" />
+                        <label for="test11">Some player</label>
+                    </div>
+                    
+                    <div class="player-name">
+                        <input type="checkbox" id="test12" />
+                        <label for="test12">Some player</label>
+                    </div>
+                </div>
             </div>
-    
-            <h1 class="role">You are a {{ role }}</h1>
-            <h1 class="location-name">at a {{ selectedLocation }}</h1>
+
+            <div class="location-list-container">
+                <h1 class="location-list-title">Locations:</h1>
+                <div class="location-names">
+                    {% for location in locations %}
+                        <div class="location-name">
+                            <input type="checkbox" id="{{ location }}" />
+                            <label for="{{location }}">{{ location }}</label>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
         </div>
     </body>
 

@@ -158,7 +158,7 @@ def db_get_assigned_role(player_id, game_code):
     query = {"game": game_code}
     for player in players.find(query):
         if str(player['_id']) == player_id:
-            return str(player['role']).title()
+            return str(player['role'])
     return None
 
 
@@ -198,7 +198,7 @@ def handle_play():
         return redirect(url_for(".go_to_lobby", code=game_code))
 
 
-@app.route("/<code>")
+@app.route("/<code>/lobby")
 def go_to_lobby(code):
     joined_players = db_get_all_player_names(code, remove_curr_player=True)
     return render_template('lobby.html',
@@ -208,7 +208,7 @@ def go_to_lobby(code):
                            gameOwner=session['owner'])
 
 @app.route("/get_game_info", methods=['POST'])
-def retrieve_role_and_start():
+def retrieve_role_and_location():
     """
     Executed by all players to retrieve the location
     and role they will have for the game.
@@ -217,6 +217,10 @@ def retrieve_role_and_start():
     """
     if request.method == 'POST':
         data = request.get_json()
+        if session['game_code'] != data['channel']:
+            print(f"ERROR: Channel does not match game code (received channel: {data['channel']}, game code: {session['game_code']}")
+            return Response(status=400)
+
         print(f"{data['playerName']} is retrieving their role and starting...")
         # Get assigned role
         print(f"Player id: {session['id']}, game code: {data['channel']}")
@@ -226,7 +230,7 @@ def retrieve_role_and_start():
         # Get assigned location
         session['location'] = data['location']
         print(f"Assigned role for {session['player_name']}: {session['role']} at the {session['location']}")
-        return jsonify(dict(redirect=url_for('.start_playing')))
+        return jsonify(dict(redirect=url_for('.start_playing', code=data['channel'])))
 
 # SOCKETIO FUNCTIONS
 @socketio.on("disconnect")
@@ -264,22 +268,31 @@ def choose_location_and_assign_roles(message):
     # Notify all other players that game is starting
     emit("gameStarting", {'location': location['name'], 'gameCode': message['channel']}, to=message['channel'], include_self=True)
 
-@app.route("/lets_play")
-def start_playing():
+@app.route("/<code>/play")
+def start_playing(code):
     # Get list of all players (excluding current player)
-    players = db_get_all_player_names(session['game_code'], remove_curr_player=True)
+    players = db_get_all_player_names(code, remove_curr_player=True)
     # Get list of all possible locations
     locations = db_get_all_location_names()
     # Get list of images for selected location
     location_images = db_get_location_images(session['location'])
     print(f"{session['player_name']} is starting to play as a {session['role']} at the {session['location']}")
-    return render_template('play.html',
-                           detectiveName=session['player_name'],
-                           selectedLocation=str(session['location']).title(),
-                           role=session['role'],
-                           locations=locations,
-                           players=players,
-                           images=location_images)
+    if session['role'] == 'spy':
+        return render_template('play.html',
+                               detectiveName=session['player_name'],
+                               selectedLocation=None,
+                               images=["https://i.imgur.com/7yowBoJ.png"],
+                               role=str(session['role']).title(),
+                               locations=locations,
+                               players=players)
+    else:
+        return render_template('play.html',
+                               detectiveName=session['player_name'],
+                               selectedLocation=str(session['location']).title(),
+                               role=str(session['role']).title(),
+                               locations=locations,
+                               players=players,
+                               images=location_images)
 
 
 if __name__ == "__main__":
