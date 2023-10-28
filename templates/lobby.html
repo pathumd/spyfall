@@ -53,7 +53,7 @@
       const socket = io();
       const detectiveName = '{{ detectiveName }}'
       const gameCode  = '{{ gameCode }}'
-      // Join socket room
+      // Join socket room (TODO: Emit if not already connected to room)
       socket.emit("join", {'playerName': '{{ detectiveName }}', 'channel': '{{ gameCode }}'})
       
 

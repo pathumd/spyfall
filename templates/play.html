@@ -34,18 +34,12 @@
         <!-- Main page -->
         <div class="main-container">
             <!-- Timer -->
-            <h1 class="timer">8:00</h1>
+            <h1 id="timer">8:00</h1>
 
-            <!--Location images -->
-            {% if images is not none %}
-                <div id="slidy-container" style="width: 25%; overflow: hidden; margin: 0 auto; padding-top: 25px;">
-                    <figure id="slidy">
-                    {% for image in images %}
-                        <img class="location-img" src='{{image}}' referrerpolicy="no-referrer" alt="Location image">
-                    {% endfor %}
-                    </figure>
-                </div>
-            {% endif %}
+            <!--Location image -->
+            <div class="img-container">
+                <img class="location-img" src='{{image}}' referrerpolicy="no-referrer" alt="Location image">
+            </div>
             
             <!--Role-->
             <h1 class="role-text">You are a <span class="player-role">{{ role }}</span></h1>
@@ -60,64 +54,10 @@
                 <div class="player-names">
                     {% for player in players %}
                         <div class="player-name">
-                            <input type="checkbox" id="test1" />
-                            <label for="test1">{{ player }}</label>
+                            <input type="checkbox" id="{{ player }}" />
+                            <label for="{{ player }}">{{ player }}</label>
                         </div>
                     {% endfor %}
-                    <div class="player-name">
-                        <input type="checkbox" id="test2" />
-                        <label for="test2">Some player</label>
-                    </div>
-                    
-                    <div class="player-name">
-                        <input type="checkbox" id="test3" />
-                        <label for="test3">Some player</label>
-                    </div>
-
-                    <div class="player-name">
-                        <input type="checkbox" id="test4" />
-                        <label for="test4">Some player</label>
-                    </div>
-                    
-                    <div class="player-name">
-                        <input type="checkbox" id="test5" />
-                        <label for="test5">Some player</label>
-                    </div>
-
-                    <div class="player-name">
-                        <input type="checkbox" id="test6" />
-                        <label for="test6">Some player</label>
-                    </div>
-                    
-                    <div class="player-name">
-                        <input type="checkbox" id="test7" />
-                        <label for="test7">Some player</label>
-                    </div>
-
-                    <div class="player-name">
-                        <input type="checkbox" id="test8" />
-                        <label for="test8">Some player</label>
-                    </div>
-
-                    <div class="player-name">
-                        <input type="checkbox" id="test9" />
-                        <label for="test9">Some player</label>
-                    </div>
-
-                    <div class="player-name">
-                        <input type="checkbox" id="test10" />
-                        <label for="test10">Some player</label>
-                    </div>
-
-                    <div class="player-name">
-                        <input type="checkbox" id="test11" />
-                        <label for="test11">Some player</label>
-                    </div>
-                    
-                    <div class="player-name">
-                        <input type="checkbox" id="test12" />
-                        <label for="test12">Some player</label>
-                    </div>
                 </div>
             </div>
 
@@ -133,66 +73,25 @@
                 </div>
             </div>
         </div>
+
+        <!-- Footer -->
+        <footer>
+            <p id="footer-text">Designed and developed by Pathum Danthanarayana</p>
+        </footer>
     </body>
 
     <script>
-        /* user defined variables */
-        var timeOnSlide = 3;	
-        // the time each image will remain static on the screen, measured in seconds
-        timeBetweenSlides = 1;
-        // the time taken to transition between images, measured in seconds
-
-        // test if the browser supports animation, and if it needs a vendor prefix to do so
-        animationstring = 'animation';
-        animation = false;
-        keyframeprefix = '';
-        domPrefixes = 'Webkit Moz O Khtml'.split(' '); 
-        // array of possible vendor prefixes
-        pfx  = '';
-        slidy = document.getElementById("slidy"); 
-        if (slidy.style.animationName !== undefined) { animation = true; } 
-        // browser supports keyframe animation w/o prefixes
-
-        if( animation === false ) {
-        for( var i = 0; i < domPrefixes.length; i++ ) {
-            if( slidy.style[ domPrefixes[i] + 'AnimationName' ] !== undefined ) {
-            pfx = domPrefixes[ i ];
-            animationstring = pfx + 'Animation';
-            keyframeprefix = '-' + pfx.toLowerCase() + '-';
-            animation = true;
-            break;
-            }
-        }
-        }
-
-        if( animation === false ) {
-            // animate in JavaScript fallback
-        } else {
-        var images = slidy.getElementsByTagName("img"),
-            firstImg = images[0], 
-            // get the first image inside the "slidy" element.
-            imgWrap = firstImg.cloneNode(false);  // copy it.
-            slidy.appendChild(imgWrap); // add the clone to the end of the images
-            var imgCount = images.length, // count the number of images in the slide, including the new cloned element
-            totalTime = (timeOnSlide + timeBetweenSlides) * (imgCount - 1), // calculate the total length of the animation by multiplying the number of _actual_ images by the amount of time for both static display of each image and motion between them
-            slideRatio = (timeOnSlide / totalTime)*100, // determine the percentage of time an induvidual image is held static during the animation
-            moveRatio = (timeBetweenSlides / totalTime)*100, // determine the percentage of time for an individual movement
-            basePercentage = 100/imgCount, // work out how wide each image should be in the slidy, as a percentage.
-            position = 0, // set the initial position of the slidy element
-            css = document.createElement("style"); // start marking a new style sheet
-            css.type = "text/css";
-            css.innerHTML += "#slidy { text-align: left; margin: 0; font-size: 0; position: relative; width: " + (imgCount * 100) + "%;  }\n"; // set the width for the slidy container
-            css.innerHTML += "#slidy img { float: left; width: " + basePercentage + "%; }\n";
-            css.innerHTML += "@"+keyframeprefix+"keyframes slidy {\n"; 
-            for (i=0;i<(imgCount-1); i++) { // 
-                position+= slideRatio; // make the keyframe the position of the image
-                css.innerHTML += position+"% { left: -"+(i * 100)+"%; }\n";
-                position += moveRatio; // make the postion for the _next_ slide
-                css.innerHTML += position+"% { left: -"+((i+1) * 100)+"%; }\n";
-            }
-            css.innerHTML += "}\n";
-            css.innerHTML += "#slidy { left: 0%; "+keyframeprefix+"transform: translate3d(0,0,0); "+keyframeprefix+"animation: "+totalTime+"s slidy infinite; }\n"; // call on the completed keyframe animation sequence
-            document.body.appendChild(css); // add the new stylesheet to the end of the document
+        const intervalID = setInterval(update_timer, 1000);
+        function update_timer() {
+            $.getJSON(
+                "/_get_time",
+                data => {
+                    $("#timer").text(data.result);
+                    if (data.result == "00:00") {
+                        clearInterval(intervalID);
+                    }
+                }
+            )
         }
     </script>
 </html> 

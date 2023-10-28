@@ -6,7 +6,8 @@ from flask_session import Session
 from pymongo import MongoClient
 import string
 import random
-from datetime import timedelta
+from time import gmtime
+from time import strftime
 
 # TODO: Fix bug where opening /lobby in two tabs causes player to join 'twice' for other users
 
@@ -25,6 +26,17 @@ socketio = SocketIO(app)
 uri = "mongodb+srv://pathumd:OiYvywaJruot0KEn@cluster0.4lv1uqa.mongodb.net/?retryWrites=true&w=majority"
 mongo_client = MongoClient(uri)
 db = mongo_client.get_database("spyfall")
+
+
+# CLASS FOR TIMER
+class Timer:
+    def __init__(self, curr_time):
+        self.curr_time = curr_time
+
+    def decrement(self):
+        if self.curr_time > 0:
+            self.curr_time -= 1
+        return strftime("%M:%S", gmtime(self.curr_time))
 
 
 # UTIL FUNCTIONS
@@ -115,11 +127,11 @@ def db_get_all_player_names(game_code, remove_curr_player=False):
     return players_lst
 
 
-def db_get_location_images(location):
+def db_get_location_image(location):
     query = {'name': location}
     locations = get_collection('locations')
     for location in locations.find(query):
-        return list(location['images'])
+        return random.choice(list(location['images']))
 
 
 def db_get_all_location_names():
@@ -171,6 +183,8 @@ def home():
 @app.route('/play', methods=['POST'])
 def handle_play():
     if request.method == 'POST':
+        # Clear existing session
+        session.clear()
         detective_name = request.form['detectiveName']
         print(f"Detective name: {detective_name}")
         # Check if user wants to create game or join game
@@ -207,6 +221,7 @@ def go_to_lobby(code):
                            joinedPlayers=joined_players,
                            gameOwner=session['owner'])
 
+
 @app.route("/get_game_info", methods=['POST'])
 def retrieve_role_and_location():
     """
@@ -218,7 +233,8 @@ def retrieve_role_and_location():
     if request.method == 'POST':
         data = request.get_json()
         if session['game_code'] != data['channel']:
-            print(f"ERROR: Channel does not match game code (received channel: {data['channel']}, game code: {session['game_code']}")
+            print(
+                f"ERROR: Channel does not match game code (received channel: {data['channel']}, game code: {session['game_code']}")
             return Response(status=400)
 
         print(f"{data['playerName']} is retrieving their role and starting...")
@@ -232,12 +248,14 @@ def retrieve_role_and_location():
         print(f"Assigned role for {session['player_name']}: {session['role']} at the {session['location']}")
         return jsonify(dict(redirect=url_for('.start_playing', code=data['channel'])))
 
+
 # SOCKETIO FUNCTIONS
 @socketio.on("disconnect")
 def handle_disconnect():
     if 'game_code' in session:
         leave_room(session['game_code'])
     session.clear()
+
 
 @socketio.on("connect")
 def handle_connect():
@@ -266,7 +284,9 @@ def choose_location_and_assign_roles(message):
     # Assign roles to all players (including yourself)
     db_assign_roles(location, players)
     # Notify all other players that game is starting
-    emit("gameStarting", {'location': location['name'], 'gameCode': message['channel']}, to=message['channel'], include_self=True)
+    emit("gameStarting", {'location': location['name'], 'gameCode': message['channel']}, to=message['channel'],
+         include_self=True)
+
 
 @app.route("/<code>/play")
 def start_playing(code):
@@ -274,25 +294,38 @@ def start_playing(code):
     players = db_get_all_player_names(code, remove_curr_player=True)
     # Get list of all possible locations
     locations = db_get_all_location_names()
-    # Get list of images for selected location
-    location_images = db_get_location_images(session['location'])
+
+    # Set timer for 8 minutes
+    if 'timer' not in session:
+        session['timer'] = Timer(curr_time=480)
     print(f"{session['player_name']} is starting to play as a {session['role']} at the {session['location']}")
+
     if session['role'] == 'spy':
         return render_template('play.html',
                                detectiveName=session['player_name'],
                                selectedLocation=None,
-                               images=["https://i.imgur.com/7yowBoJ.png"],
+                               image="https://i.imgur.com/oLxKqoZ.png",
                                role=str(session['role']).title(),
                                locations=locations,
                                players=players)
     else:
+        # Get random image for selected location
+        if 'location_image' not in session:
+            session['location_image'] = db_get_location_image(session['location'])
         return render_template('play.html',
-                               detectiveName=session['player_name'],
-                               selectedLocation=str(session['location']).title(),
-                               role=str(session['role']).title(),
-                               locations=locations,
-                               players=players,
-                               images=location_images)
+                                detectiveName=session['player_name'],
+                                selectedLocation=str(session['location']).title(),
+                                role=str(session['role']).title(),
+                                locations=locations,
+                                players=players,
+                                image=session['location_image'])
+
+
+@app.route("/_get_time", methods=['GET', 'POST'])
+def get_remaining_time():
+    timer = session['timer']
+    new_time = timer.decrement()
+    return jsonify({"result": new_time})
 
 
 if __name__ == "__main__":
