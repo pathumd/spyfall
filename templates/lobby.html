@@ -53,6 +53,13 @@
       const socket = io();
       const detectiveName = '{{ detectiveName }}'
       const gameCode  = '{{ gameCode }}'
+      var playerList = [];
+      
+      // Force page refresh if lobby was accessed from history (back arrow)
+      if(performance.navigation.type == 2){
+        location.reload(true);
+      }
+      
       // Join socket room (TODO: Emit if not already connected to room)
       socket.emit("join", {'playerName': '{{ detectiveName }}', 'channel': '{{ gameCode }}'})
       
@@ -61,10 +68,14 @@
       // Handler for updating lobby with joining players
       socket.on('playerJoinLog', data => {
         console.log(data["message"] + " joined");
-        let newPlayerName = document.createElement('H1')
-        newPlayerName.innerText = data["message"]
-        newPlayerName.classList.add('player-name')
-        $('.players').append(newPlayerName)
+
+        if (playerList.includes(data["message"]) == false) {
+          let newPlayerName = document.createElement('H1')
+          newPlayerName.innerText = data["message"]
+          newPlayerName.classList.add('player-name')
+          $('.players').append(newPlayerName)
+          playerList.push(newPlayerName);
+        }
       });
       
       // Handler for retrieving location and role

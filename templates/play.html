@@ -61,16 +61,22 @@
                 </div>
             </div>
 
-            <div class="location-list-container">
+            <div class="wrapper">
                 <h1 class="location-list-title">Locations:</h1>
-                <div class="location-names">
-                    {% for location in locations %}
-                        <div class="location-name">
-                            <input type="checkbox" id="{{ location }}" />
-                            <label for="{{location }}">{{ location }}</label>
-                        </div>
-                    {% endfor %}
-                </div>
+                <ul class="img-grid">
+                  {% set items = locations.items() | list %}
+                  {% for i in range(items | length) %}
+                    {% set location_name = items[i][0] %}
+                    {% set location_image = items[i][1] %}
+                    {% if location_name != selectedLocation %}
+                        <li>
+                        <a href='javascript:;' class="overlay-container" data-overlay-text="{{ location_name }}">
+                            <img src="{{ location_image }}" alt="{{ location_name }}" id="{{ i }}" onclick="changeLocationState(this.id)" class="overlay-img" referrerpolicy="no-referrer"/>
+                        </a>
+                        </li>
+                    {% endif %}
+                  {% endfor %}
+                </ul>
             </div>
         </div>
 
@@ -87,11 +93,22 @@
                 "/_get_time",
                 data => {
                     $("#timer").text(data.result);
-                    if (data.result == "00:00") {
+                    if ((data.result).localeCompare("00:00") == 0) {
+                        $("#timer").addClass("timer-finished");
                         clearInterval(intervalID);
                     }
                 }
             )
+        }
+
+        function changeLocationState(clickedId) {
+            let element = '#' + clickedId;
+            let locationContainer = document.getElementById(clickedId);
+            if ($(element).hasClass("location-active")) {
+                $(element).removeClass("location-active");
+            } else {
+                $(element).addClass("location-active");
+            }
         }
     </script>
 </html> 

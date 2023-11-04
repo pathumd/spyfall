@@ -100,8 +100,16 @@ def db_create_player(player, game_code):
     :param game_code: The code of the game they are creating/joining
     """
     # Create a player
-    new_player = db.get_collection("players").insert_one({'name': player, 'game': game_code, 'role': "unknown"})
+    new_player = db.get_collection("players").insert_one({'name': player, 'game': game_code, 'role': "unknown", 'state': 'idle'})
     return str(new_player.inserted_id)
+
+
+def db_update_player_state(player_id, game_code, state):
+    players = db.get_collection("players")
+
+    # Update player's status
+    query = {"_id": player_id, "game": game_code}
+    players.update_one(query, {"$set": {"state": state}})
 
 
 def db_get_all_players(game_code):
@@ -134,12 +142,13 @@ def db_get_location_image(location):
         return random.choice(list(location['images']))
 
 
-def db_get_all_location_names():
+def db_get_all_locations():
+    locations_dict = {}
     locations = get_collection("locations")
-    location_names = []
     for location in locations.find():
-        location_names.append(str(location['name']).title())
-    return location_names
+        location_name = str(location['name']).title()
+        locations_dict[location_name] = location['images'][0]
+    return locations_dict
 
 
 def db_get_random_location():
@@ -205,16 +214,27 @@ def handle_play():
             print(f"Player '{detective_name}' creating game {game_code}...")
             db_create_game(detective_name, game_code)
 
-        # Save session info
-        session['id'] = db_create_player(detective_name, game_code)
+        # Save player name and game code
         session['player_name'] = detective_name
         session['game_code'] = game_code
-        return redirect(url_for(".go_to_lobby", code=game_code))
+        return redirect(url_for(".go_to_lobby", game_code=game_code))
 
 
-@app.route("/<code>/lobby")
-def go_to_lobby(code):
-    joined_players = db_get_all_player_names(code, remove_curr_player=True)
+@app.route("/<game_code>/lobby")
+def go_to_lobby(game_code):
+    #TODO: Move the following part into a function (account for case where user navigates back to this route from /play page
+    if 'timer' in session:
+        print("Deleting timer from session...")
+        del session['timer']
+    if 'location_image' in session:
+        print("Deleting location image from session...")
+        del session['location_image']
+
+    # Create player and save player ID
+    if 'id' not in session:
+        session['id'] = db_create_player(session['player_name'], session['game_code'])
+
+    joined_players = db_get_all_player_names(session['game_code'], remove_curr_player=True)
     return render_template('lobby.html',
                            detectiveName=session['player_name'],
                            gameCode=session['game_code'],
@@ -252,13 +272,15 @@ def retrieve_role_and_location():
 # SOCKETIO FUNCTIONS
 @socketio.on("disconnect")
 def handle_disconnect():
+    print("USER DISCONNECTED")
     if 'game_code' in session:
         leave_room(session['game_code'])
-    session.clear()
+    # session.clear()
 
 
 @socketio.on("connect")
 def handle_connect():
+    print("USER CONNECTED")
     if 'game_code' in session:
         leave_room(session['game_code'])
     session.clear()
@@ -293,9 +315,9 @@ def start_playing(code):
     # Get list of all players (excluding current player)
     players = db_get_all_player_names(code, remove_curr_player=True)
     # Get list of all possible locations
-    locations = db_get_all_location_names()
+    locations = db_get_all_locations()
 
-    # Set timer for 8 minutes
+    # Set timer for 8 minutes (prevent user from getting new timer upon page refresh)
     if 'timer' not in session:
         session['timer'] = Timer(curr_time=480)
     print(f"{session['player_name']} is starting to play as a {session['role']} at the {session['location']}")
@@ -309,7 +331,7 @@ def start_playing(code):
                                locations=locations,
                                players=players)
     else:
-        # Get random image for selected location
+        # Get random image for selected location (prevent user from getting new image upon page refresh)
         if 'location_image' not in session:
             session['location_image'] = db_get_location_image(session['location'])
         return render_template('play.html',
