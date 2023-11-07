@@ -104,6 +104,15 @@ def db_create_player(player, game_code):
     return str(new_player.inserted_id)
 
 
+def db_player_joined_game(player_id, game_code):
+    players = db.get_collection("players")
+    query = {'game': game_code}
+    for player in players.find(query):
+        if player_id == str(player['_id']):
+            return True
+    return False
+
+
 def db_update_player_state(player_id, game_code, state):
     players = db.get_collection("players")
 
@@ -213,10 +222,13 @@ def handle_play():
             print(f"Game code: {game_code}")
             print(f"Player '{detective_name}' creating game {game_code}...")
             db_create_game(detective_name, game_code)
-
         # Save player name and game code
         session['player_name'] = detective_name
         session['game_code'] = game_code
+        # Create player and save player ID
+        session['id'] = db_create_player(session['player_name'], session['game_code'])
+        socketio.emit("playerJoinLog", {'message': session['player_name']}, to=session['game_code'])
+
         return redirect(url_for(".go_to_lobby", game_code=game_code))
 
 
@@ -230,11 +242,7 @@ def go_to_lobby(game_code):
         print("Deleting location image from session...")
         del session['location_image']
 
-    # Create player and save player ID
-    if 'id' not in session:
-        session['id'] = db_create_player(session['player_name'], session['game_code'])
-
-    joined_players = db_get_all_player_names(session['game_code'], remove_curr_player=True)
+    joined_players = db_get_all_player_names(session['game_code'])
     return render_template('lobby.html',
                            detectiveName=session['player_name'],
                            gameCode=session['game_code'],
@@ -274,6 +282,7 @@ def retrieve_role_and_location():
 def handle_disconnect():
     print("USER DISCONNECTED")
     if 'game_code' in session:
+        print(f"Leaving room for {session['game_code']}")
         leave_room(session['game_code'])
     # session.clear()
 
@@ -281,16 +290,17 @@ def handle_disconnect():
 @socketio.on("connect")
 def handle_connect():
     print("USER CONNECTED")
-    if 'game_code' in session:
-        leave_room(session['game_code'])
-    session.clear()
+    # if 'game_code' in session:
+        # leave_room(session['game_code'])
+    # session.clear()
 
 
 @socketio.on("join")
 def handle_join_game(message):
-    join_room(message['channel'])
-    emit("playerJoinLog", {'message': message['playerName']}, to=message['channel'])
-
+    if 'joinedSocketRoom' not in session:
+        print(f"{message['playerName']} joining socket room {message['channel']}")
+        join_room(message['channel'])
+        session['joinedSocketRoom'] = True
 
 @socketio.on("organizeGame")
 def choose_location_and_assign_roles(message):

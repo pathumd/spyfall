@@ -38,14 +38,14 @@
                 <button class="invite-code-btn" onclick="copyGameCode()">{{ gameCode }}</button>
             </div>
             <h3 class="game-length">Game length: 8 minutes</h2>
+            {% if gameOwner is true %}
+                <button class="outline-button" id="start-game" onclick="startGame()">Start game</button>
+            {% endif %}
             <div class="players">
                 {% for player in joinedPlayers %}
                     <h1 class="player-name">{{ player }}</div>
                 {% endfor %}
             </div>
-            {% if gameOwner is true %}
-                <button class="outline-button" id="start-game" onclick="startGame()">Start game</button>
-            {% endif %}
         </div>
     </body>
 
