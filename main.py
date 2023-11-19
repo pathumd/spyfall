@@ -39,6 +39,9 @@ class Timer:
             self.curr_time -= 1
         return strftime("%M:%S", gmtime(self.curr_time))
 
+    def clear(self):
+        self.curr_time = 0
+
 
 # UTIL FUNCTIONS
 def get_collection(collection_name):
@@ -234,20 +237,23 @@ def handle_play():
 
 @app.route("/<game_code>/lobby")
 def go_to_lobby(game_code):
-    #TODO: Move the following part into a function (account for case where user navigates back to this route from /play page
+    clear_timer_and_location()
+    joined_players = db_get_all_player_names(session['game_code'])
+    return render_template('lobby.html',
+                           detectiveName=session['player_name'],
+                           owner=session['owner'],
+                           gameCode=session['game_code'],
+                           joinedPlayers=joined_players,
+                           gameOwner=session['owner'])
+
+
+def clear_timer_and_location():
     if 'timer' in session:
         print("Deleting timer from session...")
         del session['timer']
     if 'location_image' in session:
         print("Deleting location image from session...")
         del session['location_image']
-
-    joined_players = db_get_all_player_names(session['game_code'])
-    return render_template('lobby.html',
-                           detectiveName=session['player_name'],
-                           gameCode=session['game_code'],
-                           joinedPlayers=joined_players,
-                           gameOwner=session['owner'])
 
 
 @app.route("/get_game_info", methods=['POST'])
@@ -284,8 +290,8 @@ def handle_disconnect():
     if 'game_code' in session:
         print(f"Leaving room for {session['game_code']}")
         leave_room(session['game_code'])
-        emit("playerLeftGame", {'game_code': session['game_code']}, to=session['game_code'], include_self=True)
-    # session.clear()
+
+        emit("playerLeftGame", {'player_name': session['player_name'], 'game_code': session['game_code']}, to=session['game_code'])
 
 
 @socketio.on("connect")
@@ -293,7 +299,10 @@ def handle_connect():
     print("USER CONNECTED")
     if 'game_code' in session:
         join_room(session['game_code'])
-    # session.clear()
+
+@socketio.on("playerLeaving")
+def handle_player_leaving(message):
+    print("USER LEAVING LOBBY")
 
 
 @socketio.on("join")
@@ -302,6 +311,7 @@ def handle_join_game(message):
         print(f"{message['playerName']} joining socket room {message['channel']}")
         join_room(message['channel'])
         session['joinedSocketRoom'] = True
+
 
 @socketio.on("organizeGame")
 def choose_location_and_assign_roles(message):
@@ -363,11 +373,18 @@ def get_remaining_time():
     new_time = timer.decrement()
     return jsonify({"result": new_time})
 
+@app.route("/_stop_timer", methods=['GET', 'POST'])
+def stop_timer():
+    print(f"Setting {session['player_name']}'s timer to 0:00...")
+    session['timer'].clear()
+    return jsonify({"cleared": True})
+
 @app.route("/leave_game", methods=['GET', 'POST'])
 def handle_leave_game():
     if request.method == 'POST':
         print(f"{session['player_name']} is leaving the game {session['game_code']}")
         leave_game(session['id'], session['game_code'])
+        session.clear()
         return redirect(url_for(".home"))
 
 
@@ -390,6 +407,7 @@ def handle_end_game():
         socketio.emit("game_ended", to=session['game_code'])
         print(f"The following player is ending the game: {session['player_name']}")
         return redirect(url_for(".home"))
+
 
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port="5000", allow_unsafe_werkzeug=True, debug=True)
