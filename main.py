@@ -8,6 +8,7 @@ import string
 import random
 from time import gmtime
 from time import strftime
+from bson.objectid import ObjectId
 
 # TODO: Fix bug where opening /lobby in two tabs causes player to join 'twice' for other users
 
@@ -56,7 +57,6 @@ def generate_game_code():
     :return: The generated game code
     """
     game_code = ""
-
     generated = False
     while not generated:
         for i in range(0, 5):
@@ -89,7 +89,7 @@ def db_create_game(player_id, game_code):
     :param player_id: The id of the player that is creating the game
     :param game_code: Code for the game
     """
-    db.get_collection("games").insert_one({'game_code': game_code, 'status': 0, 'owner': player_id})
+    db.get_collection("games").insert_one({'game_code': game_code, 'owner': player_id})
     session['owner'] = True
 
 
@@ -100,7 +100,7 @@ def db_create_player(player, game_code):
     :param game_code: The code of the game they are creating/joining
     """
     # Create a player
-    new_player = db.get_collection("players").insert_one({'name': player, 'game': game_code, 'role': "unknown", 'state': 'idle'})
+    new_player = db.get_collection("players").insert_one({'name': player, 'game': game_code, 'role': "unknown"})
     return str(new_player.inserted_id)
 
 
@@ -284,14 +284,15 @@ def handle_disconnect():
     if 'game_code' in session:
         print(f"Leaving room for {session['game_code']}")
         leave_room(session['game_code'])
+        emit("playerLeftGame", {'game_code': session['game_code']}, to=session['game_code'], include_self=True)
     # session.clear()
 
 
 @socketio.on("connect")
 def handle_connect():
     print("USER CONNECTED")
-    # if 'game_code' in session:
-        # leave_room(session['game_code'])
+    if 'game_code' in session:
+        join_room(session['game_code'])
     # session.clear()
 
 
@@ -320,6 +321,7 @@ def choose_location_and_assign_roles(message):
          include_self=True)
 
 
+
 @app.route("/<code>/play")
 def start_playing(code):
     # Get list of all players (excluding current player)
@@ -336,10 +338,11 @@ def start_playing(code):
         return render_template('play.html',
                                detectiveName=session['player_name'],
                                selectedLocation=None,
-                               image="https://i.imgur.com/oLxKqoZ.png",
+                               image="https://i.imgur.com/kzIwZUU.png",
                                role=str(session['role']).title(),
                                locations=locations,
-                               players=players)
+                               players=players,
+                               owner=session['owner'])
     else:
         # Get random image for selected location (prevent user from getting new image upon page refresh)
         if 'location_image' not in session:
@@ -350,7 +353,8 @@ def start_playing(code):
                                 role=str(session['role']).title(),
                                 locations=locations,
                                 players=players,
-                                image=session['location_image'])
+                                image=session['location_image'],
+                                owner=session['owner'])
 
 
 @app.route("/_get_time", methods=['GET', 'POST'])
@@ -359,6 +363,33 @@ def get_remaining_time():
     new_time = timer.decrement()
     return jsonify({"result": new_time})
 
+@app.route("/leave_game", methods=['GET', 'POST'])
+def handle_leave_game():
+    if request.method == 'POST':
+        print(f"{session['player_name']} is leaving the game {session['game_code']}")
+        leave_game(session['id'], session['game_code'])
+        return redirect(url_for(".home"))
+
+
+def leave_game(player_id, game_code):
+    players = get_collection("players")
+    players.delete_one({'_id': ObjectId(player_id), 'game': game_code})
+
+
+def end_game(owner, game_code):
+    games = get_collection("games")
+    games.delete_one({'game_code': game_code, 'owner': owner})
+
+
+@app.route("/end_game", methods=['GET', 'POST'])
+def handle_end_game():
+    if request.method == 'POST':
+        end_game(session['player_name'], session['game_code'])
+        leave_game(session['id'], session['game_code'])
+        # Notify all players to leave game
+        socketio.emit("game_ended", to=session['game_code'])
+        print(f"The following player is ending the game: {session['player_name']}")
+        return redirect(url_for(".home"))
 
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port="5000", allow_unsafe_werkzeug=True, debug=True)

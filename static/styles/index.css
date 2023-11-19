@@ -252,10 +252,7 @@ p {
     border-radius: clamp(0.4rem, 0.75vw, 1rem);
     display: inline-block;
 }
-#header:hover {
-  color: #060807;
-  background-color: #EAEBE6;
-}
+
 .splash-container {
     text-align: center;
     margin-top: 210px;

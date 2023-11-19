@@ -293,6 +293,10 @@ p {
   font-size: 40px;
 }
 
+.game-owner {
+  color: #B69965;
+}
+
 #start-game {
   margin-top: 5px;
 }

@@ -462,3 +462,13 @@ footer {
   -webkit-filter: blur(1px) brightness(25%);
   -moz-filter: blur(1px) brightness(25%);
 }
+
+.actions-container {
+  margin-top: 50px;
+  text-align: center;
+}
+
+.alert-container {
+  display: none;
+  padding: 50px 0px 20px 0px;
+}
