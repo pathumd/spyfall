@@ -300,10 +300,6 @@ def handle_connect():
     if 'game_code' in session:
         join_room(session['game_code'])
 
-@socketio.on("playerLeaving")
-def handle_player_leaving(message):
-    print("USER LEAVING LOBBY")
-
 
 @socketio.on("join")
 def handle_join_game(message):
@@ -407,6 +403,27 @@ def handle_end_game():
         socketio.emit("game_ended", to=session['game_code'])
         print(f"The following player is ending the game: {session['player_name']}")
         return redirect(url_for(".home"))
+
+@app.route("/leave_lobby", methods=['GET', 'POST'])
+def handle_leave_lobby():
+    if request.method == 'POST':
+        # Check if player is game owner
+        if session['owner']:
+            # End the game and then leave
+            end_game(session['player_name'], session['game_code'])
+            leave_game(session['id'], session['game_code'])
+            # Notify all players to leave game
+            socketio.emit("game_ended", to=session['game_code'])
+            print(f"The following player is ending the game: {session['player_name']}")
+        else:
+            print(f"{session['player_name']} is leaving the game {session['game_code']}")
+            leave_game(session['id'], session['game_code'])
+        # Notify all players to leave game
+        socketio.emit("playerLeft", {'message': session['player_name']}, to=session['game_code'])
+        # Clear session
+        session.clear()
+        return redirect(url_for(".home"))
+
 
 
 if __name__ == "__main__":

@@ -32,6 +32,13 @@
         </nav>
 
         <!-- Lobby -->
+        <div class="alert-container" id="alert-message">
+          <div class="alert alert-danger">
+              <a href="#" class="close" data-dismiss="alert" aria-label="close"></a>
+              <strong>Warning!</strong> This game has now ended. Click 'Leave Game' or return home.
+          </div>
+        </div>
+
         <div class="lobby-container">
             <div class="invite-code-container">
                 <h1 class="invite-code-title">Invite code:</h1>
@@ -40,10 +47,14 @@
             <h3 class="game-length">Game length: 8 minutes</h2>
             {% if gameOwner is true %}
                 <button class="outline-button" id="start-game" onclick="startGame()">Start game</button>
+                <div class="spacer" style="display: inline-block; margin: 5px;"></div>
             {% endif %}
-            <div class="players">
+            <form style="display: inline-block;" action="{{ url_for('handle_leave_lobby') }}" method="POST">
+              <button class="outline-button" id="leave-lobby" style="margin-top: 10px;" type="submit">Leave lobby</button>
+            </form>
+            <div class="players" id="playerList">
                 {% for player in joinedPlayers %}
-                    <h1 class="player-name">{{ player }}</div>
+                    <h1 class="player-name">{{ player }}
                 {% endfor %}
             </div>
         </div>
@@ -63,7 +74,6 @@
       // Join socket room (TODO: Emit if not already connected to room)
       socket.emit("join", {'playerName': '{{ detectiveName }}', 'channel': '{{ gameCode }}'})
       
-
 
       // Handler for updating lobby with joining players
       socket.on('playerJoinLog', data => {
@@ -115,6 +125,23 @@
         // console.log("Switching to the play page...")
         // window.location.href = dest;
         console.log("'{{ detectiveName }}' received redirect message from server");
+      });
+
+      // Handler for updating lobby with joining players
+      socket.on('game_ended', data => {
+          $("#alert-message").show();
+      });
+
+      // Handler for updating lobby when players leave
+      socket.on('playerLeft', data => {
+          var playerName = data["message"];
+          var playerList = document.getElementById('playerList').children;
+          for (let i = 0; i < playerList.length; i++) {
+            if ((playerList[i].innerText).localeCompare(playerName) == 0) {
+              console.log("Match found!");
+              playerList[i].remove();
+            }
+          }
       });
 
       // Function to copy game code
