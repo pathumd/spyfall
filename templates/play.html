@@ -60,7 +60,23 @@
             {% if selectedLocation is not none %}
                 <h1 class="ml3 selected-location">at a {{ selectedLocation }}</h1>
             {% endif %}
-
+            
+            <!-- Player actions-->
+            <div class="actions-container">
+                {% if owner == true %}
+                    <form action="{{ url_for('handle_end_game') }}" method="POST">
+                        <button class="outline-button" type="submit">End game</button>
+                    </form>
+                {% else %}
+                    <form action="{{ url_for('handle_leave_game') }}" method="POST">
+                        <button class="outline-button" type="submit">Leave game</button>
+                    </form>
+                {% endif %}
+                <form action="{{ url_for('go_to_lobby', game_code=game_code) }}" method="POST">
+                    <button class="outline-button" type="submit">Go to lobby</button>
+                </form>
+            </div>
+            
             <!-- Player names -->
             <div class="players-list-container">
                 <h1 class="player-list-title">Player list:</h1>
@@ -91,19 +107,6 @@
                     {% endif %}
                   {% endfor %}
                 </ul>
-            </div>
-
-            <!-- Player actions-->
-            <div class="actions-container">
-                {% if owner == true %}
-                    <form action="{{ url_for('handle_end_game') }}" method="POST">
-                        <button class="outline-button" type="submit">End game</button>
-                    </form>
-                {% else %}
-                    <form action="{{ url_for('handle_leave_game') }}" method="POST">
-                        <button class="outline-button" type="submit">Leave game</button>
-                    </form>
-                {% endif %}
             </div>
         </div>
 

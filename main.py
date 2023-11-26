@@ -92,7 +92,7 @@ def db_create_game(player_id, game_code):
     :param player_id: The id of the player that is creating the game
     :param game_code: Code for the game
     """
-    db.get_collection("games").insert_one({'game_code': game_code, 'owner': player_id})
+    db.get_collection("games").insert_one({'game_code': game_code, 'owner': player_id, 'status': 0})
     session['owner'] = True
 
 
@@ -195,6 +195,29 @@ def db_get_assigned_role(player_id, game_code):
     return None
 
 
+def db_game_exists(game_code):
+    games = get_collection('games')
+    for game in games.find():
+        if game['game_code'] == game_code:
+            return True
+    return False
+
+
+def db_game_started(game_code):
+    games = get_collection('games')
+    query = {'game_code': game_code}
+    for game in games.find(query):
+        if game['status'] == 1:
+            return True
+    return False
+
+
+def db_set_game_status(game_code, status):
+    games = get_collection('games')
+    query = {'game_code': game_code}
+    games.update_one(query, {"$set": {"status": status}})
+
+
 # ROUTE FUNCTIONS
 @app.route('/')
 def home():
@@ -232,11 +255,29 @@ def handle_play():
         session['id'] = db_create_player(session['player_name'], session['game_code'])
         socketio.emit("playerJoinLog", {'message': session['player_name']}, to=session['game_code'])
 
-        return redirect(url_for(".go_to_lobby", game_code=game_code))
+        return redirect(url_for(".go_to_lobby", game_code=game_code), code=307)
 
 
-@app.route("/<game_code>/lobby")
+@app.route("/<game_code>/lobby", methods=['GET', 'POST'])
 def go_to_lobby(game_code):
+    # Check if game exists
+    if not db_game_exists(game_code):
+        print("User is trying to access invalid route. Redirecting back to home...")
+        return redirect(url_for(".home"))
+    # Check if player has joined the game
+    if 'id' in session:
+        if not db_player_joined_game(session['id'], game_code):
+            print("Player hasn't joined this game. Redirecting back to home...")
+            return redirect(url_for(".home"))
+    else:
+        print("User is trying to access invalid route. Redirecting back to home...")
+        return redirect(url_for(".home"))
+
+    # Set game status back to 0 if game owner returned here
+    if session['owner']:
+        if db_game_started(game_code):
+            db_set_game_status(game_code, 0)
+
     clear_timer_and_location()
     joined_players = db_get_all_player_names(session['game_code'])
     return render_template('lobby.html',
@@ -323,6 +364,8 @@ def choose_location_and_assign_roles(message):
     location = db_get_random_location()
     # Assign roles to all players (including yourself)
     db_assign_roles(location, players)
+    # Set game status to started
+    db_set_game_status(message['channel'], 1)
     # Notify all other players that game is starting
     emit("gameStarting", {'location': location['name'], 'gameCode': message['channel']}, to=message['channel'],
          include_self=True)
@@ -330,6 +373,15 @@ def choose_location_and_assign_roles(message):
 
 @app.route("/<code>/play")
 def start_playing(code):
+    # Check if player has joined the game
+    if 'id' in session:
+        if not db_player_joined_game(session['id'], code):
+            print("Player hasn't joined this game. Redirecting back to home...")
+            return redirect(url_for(".home"))
+    else:
+        print("User is trying to access invalid route. Redirecting back to home...")
+        return redirect(url_for(".home"))
+
     # Get list of all players (excluding current player)
     players = db_get_all_player_names(code, remove_curr_player=True)
     # Get list of all possible locations
@@ -348,7 +400,8 @@ def start_playing(code):
                                role=str(session['role']).title(),
                                locations=locations,
                                players=players,
-                               owner=session['owner'])
+                               owner=session['owner'],
+                               game_code=session['game_code'])
     else:
         # Get random image for selected location (prevent user from getting new image upon page refresh)
         if 'location_image' not in session:
@@ -360,7 +413,8 @@ def start_playing(code):
                                locations=locations,
                                players=players,
                                image=session['location_image'],
-                               owner=session['owner'])
+                               owner=session['owner'],
+                               game_code=session['game_code'])
 
 
 @app.route("/_get_time", methods=['GET', 'POST'])
@@ -374,6 +428,8 @@ def get_remaining_time():
 def stop_timer():
     print(f"Setting {session['player_name']}'s timer to 0:00...")
     session['timer'].clear()
+    if session['owner']:
+        db_set_game_status(session['game_code'], 0)
     return jsonify({"cleared": True})
 
 

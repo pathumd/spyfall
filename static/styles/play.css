@@ -273,7 +273,7 @@ p {
 [type="checkbox"]:checked + label:after {
   content: '✕';
   position: absolute;
-  top: .594em;
+  top: .590em;
   left: .09em;
   font-size: 1.375em;
   color: #B69965;
@@ -465,5 +465,9 @@ footer {
 
 .game-ended-container {
   display: none;
-  padding: 50px 0px 20px 0px;
+  padding: 20px 0px 20px 0px;
+}
+
+form {
+  display: inline-block;
 }
