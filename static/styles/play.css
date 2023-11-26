@@ -1,3 +1,4 @@
+/** Font faces **/
 @font-face {
   font-family: "Geist Mono";
   src: url("fonts/GeistMono-UltraLight.otf");
@@ -30,8 +31,7 @@ body {
     height: 100%;
 }
 
-
-
+/** Header and paragraphs **/
 h1 {
     font-weight: 200;
 }
@@ -99,7 +99,7 @@ p {
 }
 
 /*
- * Just a quick hamburger
+ * Hamburger menu
  */
 #menuToggle span
 {
@@ -143,7 +143,7 @@ p {
 }
 
 /*
- * But let's hide the middle one.
+ * Hide the middle one.
  */
 #menuToggle input:checked ~ span:nth-last-child(3)
 {
@@ -152,7 +152,7 @@ p {
 }
 
 /*
- * Ohyeah and the last one should go the other direction
+ * Last one should go the other direction
  */
 #menuToggle input:checked ~ span:nth-last-child(2)
 {
@@ -189,14 +189,12 @@ p {
 }
 
 /*
- * And let's slide it in from the left
+ * Slide it in from the left
  */
 #menuToggle input:checked ~ ul
 {
   transform: none;
 }
-
-
 
 
 /** Outline button **/
@@ -273,7 +271,7 @@ p {
 [type="checkbox"]:checked + label:after {
   content: '✕';
   position: absolute;
-  top: .590em;
+  top: .550em;
   left: .09em;
   font-size: 1.375em;
   color: #B69965;

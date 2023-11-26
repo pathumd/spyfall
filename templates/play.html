@@ -6,13 +6,16 @@
         <title>Spyfall</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <!-- Bootstrap -->
         <link rel="icon" type="image/x-icon" href="{{ url_for('static',filename='images/favicon.ico') }}">
+        <!-- Bootstrap -->
         <link rel= "stylesheet" type= "text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
         <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/play.css') }}">
+        <!-- JQuery -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+        <!-- SocketIO -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js" integrity="sha512-Xm9qbB6Pu06k3PUwPj785dyTl6oHxgsv9nHp7ej7nCpAqGZT3OZpsELuCYX05DdonFpTlBpXMOxjavIAIUwr0w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <!-- Anime.js -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/2.0.2/anime.min.js"></script>
 
     </head>
@@ -34,16 +37,18 @@
 
         <!-- Main page -->
         <div class="main-container">
+            <!-- Alert message for discussion-->
             <div class="discuss-container" id="discuss-message">
                 <div class="alert alert-danger">
                     <a href="#" class="close" data-dismiss="alert" aria-label="close"></a>
                     <strong>Time's up!</strong> Discuss and decide who the spy is.
                 </div>
             </div>
+            <!-- Alert message for game ended-->
             <div class="game-ended-container" id="game-ended-message">
                 <div class="alert alert-danger">
                     <a href="#" class="close" data-dismiss="alert" aria-label="close"></a>
-                    <strong>Game has ended!</strong> Go back to lobby or click 'Leave game'.
+                    <strong>Game has ended!</strong> Click 'Go to lobby' or 'Leave game'.
                 </div>
             </div>
             <!-- Timer -->
@@ -76,7 +81,7 @@
                     <button class="outline-button" type="submit">Go to lobby</button>
                 </form>
             </div>
-            
+
             <!-- Player names -->
             <div class="players-list-container">
                 <h1 class="player-list-title">Player list:</h1>
@@ -115,17 +120,20 @@
             <p id="footer-text">Designed and developed by Pathum Danthanarayana</p>
         </footer>
     </body>
-
     <script>
+        // Define constants
         const socket = io();
         const intervalID = setInterval(update_timer, 1000);
 
         function update_timer() {
+            // Executed every 1 second for player to request current time 
+            // of game's timer from backend
             $.getJSON(
                 "/_get_time",
                 data => {
                     $("#timer").text(data.result);
                     if ((data.result).localeCompare("00:00") == 0) {
+                        // Notify players to start discussing who spy is
                         clearInterval(intervalID);
                         $("#discuss-message").show();
                     }
@@ -134,8 +142,8 @@
         }
 
         function changeLocationState(clickedId) {
+            // Toggle selection of locations
             let element = '#' + clickedId;
-            let locationContainer = document.getElementById(clickedId);
             if ($(element).hasClass("location-active")) {
                 $(element).removeClass("location-active");
             } else {
@@ -155,19 +163,7 @@
                 }
             )
         });
-
-        // Wrap every letter in a span
-        var textWrapper = document.querySelector('.ml3');
-        if (textWrapper != null) {
-            textWrapper.innerHTML = textWrapper.textContent.replace(/\S/g, "<span class='letter'>$&</span>");
-            anime.timeline({loop: false})
-                .add({
-                targets: '.ml3 .letter',
-                opacity: [0,1],
-                easing: "easeInOutQuad",
-                duration: 2250,
-                delay: (el, i) => 150 * (i+1)
-                });
-        }
     </script>
+    <!-- External JS -->
+    <script src="{{ url_for('static', filename='scripts/play.js') }}"></script>
 </html> 

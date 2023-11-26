@@ -1,3 +1,4 @@
+/** Font faces **/
 @font-face {
   font-family: "Geist Mono";
   src: url("fonts/GeistMono-UltraLight.otf");
@@ -30,6 +31,7 @@ body {
     height: 100%;
 }
 
+/** Square background animation **/
 :root {
 	--grid-offset: calc(50% + 80px);
 	--color: hsl(0 0% 6%);
@@ -64,6 +66,7 @@ body::before {
     -webkit-mask: radial-gradient(circle at 0% 0%, hsl(0 0% 100% / 0.2), transparent);
 }
 
+/** Header and paragraph tags **/
 h1 {
     font-weight: 200;
 }
@@ -131,7 +134,7 @@ p {
 }
 
 /*
- * Just a quick hamburger
+ * Hamburger menu
  */
 #menuToggle span
 {
@@ -175,7 +178,7 @@ p {
 }
 
 /*
- * But let's hide the middle one.
+ * Hide the middle one.
  */
 #menuToggle input:checked ~ span:nth-last-child(3)
 {
@@ -184,7 +187,7 @@ p {
 }
 
 /*
- * Ohyeah and the last one should go the other direction
+ * Last one should go the other direction
  */
 #menuToggle input:checked ~ span:nth-last-child(2)
 {
@@ -221,14 +224,12 @@ p {
 }
 
 /*
- * And let's slide it in from the left
+ * Slide it in from the left
  */
 #menuToggle input:checked ~ ul
 {
   transform: none;
 }
-
-
 
 
 /** Outline button **/
@@ -265,7 +266,7 @@ p {
 }
 
 
-/** Lobby **/
+/** Lobby wrapper **/
 .lobby-container {
   margin-top: 60px;
   text-align: center;
@@ -295,6 +296,7 @@ p {
   -webkit-transition: all .2s ease-in;
   transition: all .2s ease-in;
 }
+
 .invite-code-btn:hover {
   color: #B69965;
 }
