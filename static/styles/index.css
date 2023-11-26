@@ -1,46 +1,67 @@
 @font-face {
-    font-family: "Editorial";
-    src: url("fonts/PPEditorialOld-UltralightItalic.otf");
-    font-style: italic;
-}
-
-@font-face {
-    font-family: "Editorial";
-    src: url("fonts/PPEditorialOld-Ultralight.otf");
+    font-family: "Geist Mono";
+    src: url("fonts/GeistMono-UltraLight.otf");
     font-weight: 100;
     font-style: normal;
 }
 
 @font-face {
-    font-family: "Editorial";
-    src: url("fonts/PPEditorialOld-Regular.otf");
+    font-family: "Geist Mono";
+    src: url("fonts/GeistMono-Regular.otf");
     font-weight: 200;
     font-style: normal;
 }
 
 @font-face {
-    font-family: "Editorial";
-    src: url("fonts/PPEditorialOld-Ultrabold.otf");
+    font-family: "Geist Mono";
+    src: url("fonts/GeistMono-Bold.otf");
     font-weight: bold;
     font-style: normal;
 }
 
-@font-face {
-    font-family: "Editorial";
-    src: url("fonts/PPEditorialOld-UltraboldItalic.otf");
-    font-weight: bold;
-    font-style: italic;
-}
-
 body {
     background-color: #060807;
-    font-family: "Editorial";
+    font-family: "Geist Mono";
     font-weight: 100;
     color: #EAEBE6;
     overflow-x: hidden;
     margin: 0;
     padding: 0;
     height: 100%;
+}
+
+:root {
+	--grid-offset: calc(50% + 80px);
+	--color: hsl(0 0% 6%);
+	--bg: hsl(0 0% 96%);
+	--color-alpha: hsl(0 0% 60%);
+	--selection: hsl(0 0% 80%);
+	--bg-size: 180px;
+	--grid-line: hsl(0 0% 80%);
+	--input-bg: hsl(0 0% 100% / 0.2);
+	--grid-accent: hsl(280 0% 10% / 0.1);
+	--glint: white;
+	--button-shade: 80%;
+}
+:root:focus-within {
+	--grid-accent: hsl(280 0% 10% / 0.35);
+}
+
+body::before {
+	content: "";
+	transition: background 0.2s;
+	background:
+		/*	How to create one square */
+		linear-gradient(var(--grid-accent) 0 2px, transparent 2px calc(100% - 2px), var(--grid-accent) calc(100% - 2px)) calc((var(--grid-offset) - (var(--bg-size) * 2)) - 1px) calc((var(--grid-offset) - var(--bg-size)) - 1px) / calc(var(--bg-size) + 2px) calc(var(--bg-size) + 2px) no-repeat,
+		linear-gradient(90deg, var(--grid-accent) 0 2px, transparent 2px calc(100% - 2px), var(--grid-accent) calc(100% - 2px)) calc((var(--grid-offset) - (var(--bg-size) * 2)) - 1px) calc((var(--grid-offset) - var(--bg-size)) - 1px) / calc(var(--bg-size) + 2px) calc(var(--bg-size) + 2px) no-repeat,
+		linear-gradient(transparent calc(var(--bg-size) - 2px), var(--grid-line) calc(var(--bg-size) - 2px) var(--bg-size)) var(--grid-offset) var(--grid-offset) / 100% var(--bg-size),
+		linear-gradient(90deg, transparent calc(var(--bg-size) - 2px), var(--grid-line) calc(var(--bg-size) - 2px) var(--bg-size)) var(--grid-offset) var(--grid-offset) / var(--bg-size) 100%, transparent;
+    /*	background: var(--bg);*/
+    position: fixed;
+    inset: 0;
+    height: 100vh;
+    width: 100vw;
+    -webkit-mask: radial-gradient(circle at 0% 0%, hsl(0 0% 100% / 0.2), transparent);
 }
 
 h1 {

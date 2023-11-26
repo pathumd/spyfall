@@ -291,7 +291,8 @@ def handle_disconnect():
         print(f"Leaving room for {session['game_code']}")
         leave_room(session['game_code'])
 
-        emit("playerLeftGame", {'player_name': session['player_name'], 'game_code': session['game_code']}, to=session['game_code'])
+        emit("playerLeftGame", {'player_name': session['player_name'], 'game_code': session['game_code']},
+             to=session['game_code'])
 
 
 @socketio.on("connect")
@@ -327,7 +328,6 @@ def choose_location_and_assign_roles(message):
          include_self=True)
 
 
-
 @app.route("/<code>/play")
 def start_playing(code):
     # Get list of all players (excluding current player)
@@ -344,7 +344,7 @@ def start_playing(code):
         return render_template('play.html',
                                detectiveName=session['player_name'],
                                selectedLocation=None,
-                               image="https://i.imgur.com/kzIwZUU.png",
+                               image="https://spyfall.s3.amazonaws.com/spy_profile+(1).png",
                                role=str(session['role']).title(),
                                locations=locations,
                                players=players,
@@ -354,13 +354,13 @@ def start_playing(code):
         if 'location_image' not in session:
             session['location_image'] = db_get_location_image(session['location'])
         return render_template('play.html',
-                                detectiveName=session['player_name'],
-                                selectedLocation=str(session['location']).title(),
-                                role=str(session['role']).title(),
-                                locations=locations,
-                                players=players,
-                                image=session['location_image'],
-                                owner=session['owner'])
+                               detectiveName=session['player_name'],
+                               selectedLocation=str(session['location']).title(),
+                               role=str(session['role']).title(),
+                               locations=locations,
+                               players=players,
+                               image=session['location_image'],
+                               owner=session['owner'])
 
 
 @app.route("/_get_time", methods=['GET', 'POST'])
@@ -369,11 +369,13 @@ def get_remaining_time():
     new_time = timer.decrement()
     return jsonify({"result": new_time})
 
+
 @app.route("/_stop_timer", methods=['GET', 'POST'])
 def stop_timer():
     print(f"Setting {session['player_name']}'s timer to 0:00...")
     session['timer'].clear()
     return jsonify({"cleared": True})
+
 
 @app.route("/leave_game", methods=['GET', 'POST'])
 def handle_leave_game():
@@ -404,6 +406,7 @@ def handle_end_game():
         print(f"The following player is ending the game: {session['player_name']}")
         return redirect(url_for(".home"))
 
+
 @app.route("/leave_lobby", methods=['GET', 'POST'])
 def handle_leave_lobby():
     if request.method == 'POST':
@@ -425,6 +428,6 @@ def handle_leave_lobby():
         return redirect(url_for(".home"))
 
 
-
+# Main script
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port="5000", allow_unsafe_werkzeug=True, debug=True)

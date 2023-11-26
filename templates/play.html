@@ -34,10 +34,16 @@
 
         <!-- Main page -->
         <div class="main-container">
-            <div class="alert-container" id="alert-message">
+            <div class="discuss-container" id="discuss-message">
                 <div class="alert alert-danger">
                     <a href="#" class="close" data-dismiss="alert" aria-label="close"></a>
-                    <strong>Warning!</strong> This game has now ended. Click 'Leave Game' or return home.
+                    <strong>Time's up!</strong> Discuss and decide who the spy is.
+                </div>
+            </div>
+            <div class="game-ended-container" id="game-ended-message">
+                <div class="alert alert-danger">
+                    <a href="#" class="close" data-dismiss="alert" aria-label="close"></a>
+                    <strong>Game has ended!</strong> Go back to lobby or click 'Leave game'.
                 </div>
             </div>
             <!-- Timer -->
@@ -118,7 +124,7 @@
                     $("#timer").text(data.result);
                     if ((data.result).localeCompare("00:00") == 0) {
                         clearInterval(intervalID);
-                        $("#alert-message").show();
+                        $("#discuss-message").show();
                     }
                 }
             )
@@ -134,9 +140,9 @@
             }
         }
 
-        // Handler for updating lobby with joining players
+        // Handler for stopping timer when game has been ended by game owner
         socket.on('game_ended', data => {
-            $("#alert-message").show();
+            $("#game-ended-message").show();
             $.getJSON(
                 "/_stop_timer",
                 data => {

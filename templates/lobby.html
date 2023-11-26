@@ -127,7 +127,7 @@
         console.log("'{{ detectiveName }}' received redirect message from server");
       });
 
-      // Handler for updating lobby with joining players
+      // Handler for showing alert message for when game has been ended
       socket.on('game_ended', data => {
           $("#alert-message").show();
       });
