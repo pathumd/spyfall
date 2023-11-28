@@ -79,6 +79,29 @@ def generate_game_code():
         return game_code.upper()
 
 
+def validate_route_access(game_code):
+    """
+    Determines whether the user is eligible to access the route.
+    (E.g. has user joined the game, is the game valid, etc.)
+    :param game_code: The game code being checked
+    :return: True if user is eligible to access route, and False if ineligible
+    """
+    # Check if game exists
+    if not db_game_exists(game_code):
+        print("Specified game does not exist. Redirecting back to home...")
+        return False
+
+    # Check if player has joined the game
+    if 'id' in session:
+        if not db_player_joined_game(session['id'], game_code):
+            print("Player hasn't joined this game. Redirecting back to home...")
+            return False
+    else:
+        print("User is trying to access invalid route. Redirecting back to home...")
+        return False
+    return True
+
+
 def clear_timer_and_location():
     if 'timer' in session:
         print("Deleting timer from session...")
@@ -302,15 +325,23 @@ def handle_play():
         session.clear()
         detective_name = request.form['detectiveName']
         print(f"Detective name: {detective_name}")
+
         # Check if user wants to create game or join game
         if 'gameCode' in request.form:
             # User wants to join a game
             game_code = request.form['gameCode']
-            if db_game_exists(game_code):
-                print(f"Player '{detective_name}' joining game {game_code}...")
-            else:
+
+            # Check if game exists
+            if not db_game_exists(game_code):
                 print(f"ERROR: Player '{detective_name}' cannot join {game_code} (game does not exist)")
                 return Response("404")
+
+            # Check if game has less than 8 players joined
+            if len(db_get_all_players(game_code)) >= 8:
+                print(f"ERROR: Player '{detective_name}' cannot join {game_code} (game is currently full)")
+                return Response("404")
+
+            print(f"Player '{detective_name}' joining game {game_code}...")
             # Player is not owner of game
             session['owner'] = False
         else:
@@ -319,11 +350,14 @@ def handle_play():
             print(f"Game code: {game_code}")
             print(f"Player '{detective_name}' creating game {game_code}...")
             db_create_game(detective_name, game_code)
+
         # Save player name and game code
         session['player_name'] = detective_name
         session['game_code'] = game_code
+
         # Create player and save player ID
         session['id'] = db_create_player(session['player_name'], session['game_code'])
+
         # Make other players update their lobby to reflect new player joining
         socketio.emit("playerJoinLog", {'message': session['player_name']}, to=session['game_code'])
         return redirect(url_for(".go_to_lobby", game_code=game_code), code=307)
@@ -335,17 +369,8 @@ def go_to_lobby(game_code):
     Route to access the game lobby.
     :param game_code: The game code of the lobby
     """
-    # Check if game exists
-    if not db_game_exists(game_code):
-        print("User is trying to access invalid route. Redirecting back to home...")
-        return redirect(url_for(".home"))
-    # Check if player has joined the game
-    if 'id' in session:
-        if not db_player_joined_game(session['id'], game_code):
-            print("Player hasn't joined this game. Redirecting back to home...")
-            return redirect(url_for(".home"))
-    else:
-        print("User is trying to access invalid route. Redirecting back to home...")
+    # Validate route access
+    if not validate_route_access(game_code):
         return redirect(url_for(".home"))
 
     # Set game status back to 0 if game owner returned here
@@ -395,13 +420,8 @@ def start_playing(code):
     Route for accessing the play page.
     :param code: The code of the game being played
     """
-    # Check if player has joined the game
-    if 'id' in session:
-        if not db_player_joined_game(session['id'], code):
-            print("Player hasn't joined this game. Redirecting back to home...")
-            return redirect(url_for(".home"))
-    else:
-        print("User is trying to access invalid route. Redirecting back to home...")
+    # Validate route access
+    if not validate_route_access(code):
         return redirect(url_for(".home"))
 
     # Get list of all players (excluding current player)
