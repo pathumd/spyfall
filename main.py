@@ -8,15 +8,20 @@ import random
 from time import gmtime
 from time import strftime
 from bson.objectid import ObjectId
-from dotenv import load_dotenv
+import json
+import subprocess
 import os
 
 # Load environment variables
-load_dotenv('.env')
+if 'ON_HEROKU_SERVER' not in os.environ:
+    config_vars = json.loads(subprocess.check_output(
+        'heroku config -a spyfall --json', shell=True).decode())
+    for key, value in config_vars.items():
+        os.environ[key] = value
 
 # Create Flask app, configure server-side sessions
 app = Flask(__name__)
-app.config['SECRET_KEY'] = str(os.getenv('SECRET_KEY'))
+app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 app.config.from_object(__name__)
@@ -26,7 +31,7 @@ Session(app)
 socketio = SocketIO(app)
 
 # Initialize Mongo DB connection
-mongo_client = MongoClient(str(os.getenv('MONGO_DB_URI')))
+mongo_client = MongoClient(os.environ['MONGO_DB_URI'])
 db = mongo_client.get_database("spyfall")
 
 
