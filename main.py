@@ -10,6 +10,7 @@ from time import strftime
 from bson.objectid import ObjectId
 import json
 import subprocess
+import certifi
 import os
 
 # Load environment variables
@@ -31,7 +32,8 @@ Session(app)
 socketio = SocketIO(app)
 
 # Initialize Mongo DB connection
-mongo_client = MongoClient(os.environ['MONGO_DB_URI'])
+certificate = certifi.where()
+mongo_client = MongoClient(os.environ['MONGO_DB_URI'], tlsCAFile=certificate)
 db = mongo_client.get_database("spyfall")
 
 
