@@ -321,6 +321,16 @@ def home():
     return render_template('index.html')
 
 
+@app.route('/rules')
+def game_rules():
+    """
+    Route for the rules page. This page discloses
+    how the game of Spyfall is played.
+    :return:
+    """
+    return render_template('rules.html')
+
+
 @app.route('/play', methods=['POST'])
 def handle_play():
     """

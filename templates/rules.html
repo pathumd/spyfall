@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Spyfall</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" type="image/x-icon" href="{{ url_for('static',filename='images/favicon.ico') }}">
+        <!-- Bootstrap -->
+        <link rel= "stylesheet" type= "text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+        <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/rules.css') }}">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+        <!-- Anime.js -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/2.0.2/anime.min.js"></script>
+    </head>
+    <body>
+        <!-- Nav bar -->
+        <nav role="navigation">
+            <div id="menuToggle">
+            <input type="checkbox" />
+            <span></span>
+            <span></span>
+            <span></span>
+            <ul id="menu">
+                <a href="/" target="_blank"><li>Home</li></a>
+                <a href="/rules"><li>How to play</li></a>
+                <a href="https://github.com/pathumd/spyfall" target="_blank"><li>Support</li></a>
+            </ul>
+            </div>
+        </nav>
+
+        <!-- Game rules -->
+        <div class="rules-container">
+          <h1 class="header">How to play</h1>
+          <div class="background">
+            <p class="subheader">Background</p>
+            <p class="text">You’re an undercover detective whose objective is to find who the enemy spy is in your department.
+              <br>You bring in all employees to a meeting room, and now must question one another to uncover the identify of the spy.  
+            </p>
+          </div>
+
+          <div class="before-you-start">
+            <p class="subheader">Before you start</p>
+            <p class="text">
+              - Gather 4-8 people<br>
+              - Have everyone in the same room or in a voice call (i.e. Discord, Zoom)<br>
+              -	Everyone has their own computer, tablet, or phone<br>
+            </p>
+          </div>
+
+          <div class="objective">
+            <p class="subheader">Objective</p>
+            <p class="text">
+              If you are a <b>detective</b>, determine who the spy is by asking questions. The questions being asked must not reveal obvious details of the location, so that the spy cannot easily determine it.<br><br>
+              If you are the <b>spy</b>, you must guess the round’s location before the timer expires. Carefully listen to the questions being asked and the answers being given by the detectives to help you narrow down your guess.
+            </p>
+          </div>
+
+          <div class="flow-of-the-game">
+            <p class="subheader">Flow of the game</p>
+            <p class="text">
+              <b>Round length:</b> 8 minutes<br><br>
+              <b>Location:</b> Each player is assigned the same location, except for one player that is the spy.
+              Moreover, the spy is not aware of the selected location.<br><br>
+              <b>Questioning:</b> The game owner (player who created the game) will begin by questioning another player about
+              the location. An example of this would be, "Is this location somewhere one would visit often?"<br><br>
+              <b>Answering:</b> The questioned player must provide an answer. In addition, no follow-up questions are permitted.
+              Once they provide an answer, it is now their turn to ask a question. This process repeats until the round is over.<br><br>
+              <b>Retaliation questions:</b> If a player is asked a question and finishes answering, they are not allowed to immediately
+              ask them a question back. Furthermore, you must ask a question from a different player.
+            </p>
+          </div>
+
+          <div class="detective-guessing-the-spy">
+            <p class="subheader">Detective - Guessing the spy</p>
+            <p class="text">
+              <b>Voting</b>: At any point in the game, a player can announce that they are suspicious of a player and can put them up
+              for vote. For example, they must say "I'd like to put player X up for vote." Next, go one by one in a clockwise manner to 
+              get each player to cast their vote.<br><br>
+              If the consensus is that the plyaer is not suspicious, the game continues. Note that each player can only put a player up for vote once.
+              Please use this wisely.<br><br>
+              Once a player is indicted, they must reveal whether they are the spy or not. Once this happens, the game is over.
+          </p>
+          </div>
+
+          <div class="spy-guessing-the-location">
+            <p class="subheader">Spy - Guessing the location</p>
+            <p class="text">
+              At any point in the game, the spy can reveal their identity in order to guess the location. Following this,
+              the game immediately ends.
+            </p>
+          </div>
+
+          <div class="how-the-game-ends">
+            <p class="subheader">How the game ends</p>
+            <p class="text">
+              <b>Indictment:</b> The group of detectives puts up a player for vote and correctly guesses the spy<br><br>
+              <b>Spy guesses:</b> The spy reveals their identity and guesses the location
+              <b>Timer expires:</b> The timer reaches 0
+            </p>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p id="footer-text">Designed and developed by Pathum Danthanarayana</p>
+        </footer>
+    </body>
+</html>
