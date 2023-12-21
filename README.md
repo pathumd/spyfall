@@ -19,22 +19,22 @@ A timer will be displayed for all players, and represents how much time is remai
 
 ## Development Tools
 
-# Flask
+### Flask
 To develop the web-application, Python's Flask framework was chosen. 
 
-# MongoDB
+### MongoDB
 To store all player and game-related data, a MongoDB cluster was created with three collections:
 - Games: Each document models a game created in Spyfall. Fields include the game code, the game creator name, and game status
 - Locations: Each document models a possible location. Fields include the location name, a list of all possible roles, and a list of image URLs for location images
 - Players: Each document models a player. Fields include the player's name, the game code of the game they've joined, and their role in the gamw
 
-# SocketIO
+### SocketIO
 To implement real-time actions by players, SocketIO was used. E.g. when a player joins/leaves/ends a game, a SocketIO event is emitted by the player. To ensure these events are only emitted and caught by players in the respective game, SocketIO rooms were used.
 
-# Amazon AWS S3
+### Amazon AWS S3
 To host the images for each location, Amazon AWS S3 was used.
 
-## Gallery
+### Gallery
 
 ## Installation
 
