@@ -34,38 +34,18 @@ To implement real-time actions by players, SocketIO was used. E.g. when a player
 ### Amazon AWS S3
 To host the images for each location, Amazon AWS S3 was used.
 
-### Gallery
+## Gallery
+https://i.imgur.com/uUtxHcz.png
+https://i.imgur.com/fhEoRJ9.png
+https://i.imgur.com/FCgXRlf.png
+https://i.imgur.com/nedk33Z.png
+https://i.imgur.com/b1sLI7o.png
+https://i.imgur.com/GQ8lrCI.png
+https://i.imgur.com/kXipxbt.png
 
-## Installation
-
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install foobar.
-
-```bash
-pip install foobar
-```
-
-## Usage
-
-```python
-import foobar
-
-# returns 'words'
-foobar.pluralize('word')
-
-# returns 'geese'
-foobar.pluralize('goose')
-
-# returns 'phenomenon'
-foobar.singularize('phenomena')
-```
-
-## Contributing
-
-Pull requests are welcome. For major changes, please open an issue first
-to discuss what you would like to change.
-
-Please make sure to update tests as appropriate.
+## Deployment
+The Spyfall app has currently been deployed on Heroku:
+https://spyfall-7ac4e79bd496.herokuapp.com/
 
 ## License
-
 [MIT](https://choosealicense.com/licenses/mit/)
