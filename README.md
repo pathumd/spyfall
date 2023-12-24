@@ -35,13 +35,13 @@ To implement real-time actions by players, SocketIO was used. E.g. when a player
 To host the images for each location, Amazon AWS S3 was used.
 
 ## Gallery
-https://i.imgur.com/uUtxHcz.png
-https://i.imgur.com/fhEoRJ9.png
-https://i.imgur.com/FCgXRlf.png
-https://i.imgur.com/nedk33Z.png
-https://i.imgur.com/b1sLI7o.png
-https://i.imgur.com/GQ8lrCI.png
-https://i.imgur.com/kXipxbt.png
+![Imgur Image](https://i.imgur.com/uUtxHcz.png)
+![Imgur Image](https://i.imgur.com/fhEoRJ9.png)
+![Imgur Image](https://i.imgur.com/FCgXRlf.png)
+![Imgur Image](https://i.imgur.com/nedk33Z.png)
+![Imgur Image](https://i.imgur.com/b1sLI7o.png)
+![Imgur Image](https://i.imgur.com/GQ8lrCI.png)
+![Imgur Image](https://i.imgur.com/kXipxbt.png)
 
 ## Deployment
 The Spyfall app has currently been deployed on Heroku:
