@@ -41,6 +41,7 @@ To host the images for each location, Amazon AWS S3 was used.
 ![Imgur Image](https://i.imgur.com/nedk33Z.png)
 ![Imgur Image](https://i.imgur.com/b1sLI7o.png)
 ![Imgur Image](https://i.imgur.com/GQ8lrCI.png)
+![Imgur Image](https://i.imgur.com/nHAbznv.png)
 ![Imgur Image](https://i.imgur.com/kXipxbt.png)
 
 ## Deployment
